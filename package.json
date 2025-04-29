@@ -1,0 +1,27 @@
+{
+  "name": "hospital-proyect",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "npx nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ismael7058/hospital-proyect.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ismael7058/hospital-proyect/issues"
+  },
+  "homepage": "https://github.com/Ismael7058/hospital-proyect#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10",
+    "pug": "^3.0.3"
+  }
+}
