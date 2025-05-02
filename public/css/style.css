@@ -2,6 +2,16 @@
   background-color: #22313b;
 }
 
+/* Body*/
+.body {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 /* Header */
 .header {
   flex: 0 0 auto;
@@ -69,6 +79,84 @@
   width: auto;
   height: 16px;
 }
+
+
+/* Section */
+.section {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+/* Aside */
+.aside {
+  box-shadow: 8px 0 15px rgba(0, 0, 0, 0.9);
+  z-index: 5;
+  border-top: 2px solid rgba(96, 96, 96, 0.541);
+}
+
+/*Menu*/
+.menu {
+  display: block;
+  padding: 10px;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.9);
+}
+/*Opciones*/
+.option {
+  color: #ffffff;
+  display: block;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  text-decoration: none;
+}
+.option:hover{
+  background-color: #274d5f;
+}
+
+.option-icon{
+  filter: invert(1);
+}
+
+
+/* Main */
+.main-bg-img {
+  background-image: url("../Img/background-image.png");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+/* Contenedor Info*/
+.contenedor {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  margin: 1rem;
+  width: calc(100% - 3rem);
+  height: calc(
+    100% - 3rem
+  );
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+/* Titulo del Conetendor*/
+.title-color{
+  color: #0a2f33;
+}
+/* Parrafos del Conetendor*/
+.text-color{
+  color: #22313b;
+}
+
 /* ----------------- */
 .list-style-none{
   list-style-type: none;
