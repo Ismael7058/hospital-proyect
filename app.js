@@ -10,5 +10,9 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname+ '/view/index.html');
 });
 
+app.get('/medico', (req, res) => {
+  res.sendFile(__dirname+ '/view/medico/home.html');
+});
+
 module.exports = app
 

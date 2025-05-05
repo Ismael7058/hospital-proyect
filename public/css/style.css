@@ -1,7 +1,9 @@
 .bg-green-blue {
   background-color: #22313b;
 }
-
+a{
+  text-decoration: none;
+}
 /* Body*/
 .body {
   height: 100vh;
@@ -75,11 +77,26 @@
   filter: invert(0);
 }
 
-.icon-b{
-  width: auto;
-  height: 16px;
+
+
+/* Usuario */
+.btn-user{
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border: none;
+  border-radius: 50% !important;
+}
+.btn-user:hover{
+  background-color: #036c81;
 }
 
+.desp:hover{
+  background-color: #036c81;
+}
 
 /* Section */
 .section {
@@ -121,9 +138,70 @@
   background-color: #274d5f;
 }
 
-.option-icon{
+.icon{
   filter: invert(1);
 }
+
+.cont-option{
+  color: #ffffff;
+  display: block;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: start;
+  text-decoration: none;
+}
+.cont-option:hover{
+  background-color: #274d5f;
+}
+
+.btn-list{
+  background-color: transparent;
+  color: white;
+  border: none;
+  text-align: start;
+}
+.list {
+  display: none;
+  padding-left: 0;
+}
+
+.list-elem {
+  color: #ffffff;
+  display: block;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  margin-top: 0.354rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.list-elem:hover{
+  background-color: #036c81;
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: start;
+  text-decoration: none;
+}
+
+.show {
+  display: flex;
+}
+
+
 
 
 /* Main */
@@ -161,4 +239,5 @@
 .list-style-none{
   list-style-type: none;
 }
+
 

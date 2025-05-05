@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Horizon</title>
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="body">
+  <header class="header bg-green-blue">
+    <nav>
+      <ul class="d-flex flex-row align-self-stretch list-style-none m-0 px-4">
+        <li class="p-2 flex-grow-1">
+          <a class="text-decoration-none fs-5 text-white" href="javascript:void(0)">
+            <img src="/img/logo.png" alt="Logo de la pagina">
+            <span class="fst-italic">HospitalHorizon</span>
+          </a>
+        </li>
+
+        <li class="dropdown p-2 d-flex align-items-center">
+          <button class="btn-user" data-bs-toggle="dropdown" aria-expanded="false">
+            <img class="icon" src="/img/avatar.png" alt="Icono de Usuario">
+          </button>
+          <ul class="dropdown-menu text-center" style="background-color: #1a262e;">
+            <li><a class="dropdown-item text-white desp" href="#">Modificar Cuenta</a></li>
+            <li><a class="dropdown-item text-white desp" href="#">Cerrar sesión</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="row h-100 section">
+    <aside class="col-2 aside bg-green-blue p-0">
+      <nav>
+        <ul class="list-style-none m-0 ps-4 pe-3">
+          <li class="fs-5 mt-3 mb-5">
+            <p class="ms-2 text-white">Menu</p>
+          </li>
+
+          <li>
+            <a class="option" href="javascript:void(0)">
+              <img class="icon" src="/img/casa.png" alt="Icono de Home">
+              <span class="">Home</span>
+            </a>
+          </li>
+
+          <li class="cont-option mt-3">
+            <button class="btn-list " onclick='toggleList("listOne")'>
+              <img class="icon" src="/img/paciente.png" alt="">
+              <span>Gestión de Pacientes</span>
+            </button>
+            <ul class="list" id="listOne">
+              <li class="list-elem">
+                <a class="text-white text-decoration-none" href="javascript:void(0)">Dar de alta al paciente</a>
+              </li>
+              <li class="list-elem">
+                <a class="text-white text-decoration-none" href="javascript:void(0)">Listar Paciente</a>
+              </li>
+              <li class="list-elem">
+                <a class="text-white text-decoration-none" href="javascript:void(0)">Buscar Paciente</a>
+              </li>
+            </ul>
+          </li>
+          <li class="cont-option mt-3">
+            <button class="btn-list " onclick='toggleList("listTwo")'>
+              <img class="icon" src="/img/salud.png" alt="">
+              <span>Atención Médica</span>
+            </button>
+            <ul class="list" id="listTwo">
+              <li class="list-elem">
+                <a class="text-white text-decoration-none" href="javascript:void(0)">Administrar medicamentos</a>
+              </li>
+              <li class="list-elem">
+                <a class="text-white text-decoration-none" href="javascript:void(0)">Plan de atención</a>
+              </li>
+              <li class="list-elem">
+                <a class="text-white text-decoration-none" href="javascript:void(0)">Solicitar pruebas de diagnóstico</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="mt-3">
+            <a class="option" href="javascript:void(0)">
+              <img class="icon" src="/img/historial-medico.png" alt="Icono de Home">
+              <span class="">Historial Clinico</span>
+            </a>
+          </li>
+
+        </ul>
+      </nav>
+    </aside>
+    <main class="col-10 main-bg-img">
+      <div class="contenedor">
+        <h2 class="text-center title-color fs-1 mb-3">Bienvenidos al Portal Médico de Hospital Horizon</h2>
+        <p class="text-color text-center fs-5 mb-4">Este espacio ha sido diseñado especialmente para ustedes,
+          profesionales de la salud, con el
+          objetivo de brindar una plataforma moderna, segura y eficiente para acceder a información clínica,
+          gestionar turnos, revisar historiales médicos, y mantenerse al tanto de las novedades institucionales.
+        </p>
+        <p class="text-color text-center fs-5 mb-4">Como parte fundamental del equipo Hospital Horizon, su compromiso
+          con la atención médica de calidad es
+          invaluable. Esta plataforma busca facilitar su labor diaria, fomentar la colaboración interdisciplinaria y
+          garantizar el acceso oportuno a los recursos necesarios para una atención centrada en el paciente.
+        </p>
+        <p class="text-color text-center fs-5 mb-4">¡Gracias por su dedicación y profesionalismo!
+        </p>
+      </div>
+    </main>
+  </section>
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function toggleList(activeId) {
+      // Cierra todos los desplegables primero
+      const lists = document.querySelectorAll('.list');
+      lists.forEach(list => {
+        if (list.id !== activeId) {
+          list.style.display = 'none';
+        }
+      });
+
+      // Luego alterna el desplegable clicado
+      const activeList = document.getElementById(activeId);
+      if (activeList.style.display === 'block') {
+        activeList.style.display = 'none';
+      } else {
+        activeList.style.display = 'block';
+      }
+    }
+  </script>
+
+
+
+</body>
+
+</html>
