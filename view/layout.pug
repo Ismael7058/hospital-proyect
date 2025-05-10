@@ -1,0 +1,22 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Hospital Horizon
+    link(rel="stylesheet", href="/css/bootstrap.min.css")
+    link(rel="stylesheet", href="/css/style.css")
+  body(class="body")
+    block content
+    script(src="/js/bootstrap.bundle.min.js")
+  script.
+    function toggleList(activeId) {
+      const lists = document.querySelectorAll('.list');
+      lists.forEach(list => {
+        if (list.id !== activeId) {
+          list.style.display = 'none';
+        }
+      });
+      const activeList = document.getElementById(activeId);
+      activeList.style.display = activeList.style.display === 'block' ? 'none' : 'block';
+    }

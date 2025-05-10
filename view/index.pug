@@ -31,24 +31,10 @@ html(lang="es")
               p.ms-2.text-white Menu
             li
               a.option(href="#")
-                img.option-icon(src="/img/casa.png", alt="Icono de Home")
+                img.icon(src="/img/casa.png", alt="Icono de Home")
                 span.fs-5 Home
 
       main.col-10.main-bg-img
-        .contenedor
-          h2.text-center.title-color.fs-1.mb-3 Bienvenidos al Portal Médico de Hospital Horizon
-          p.text-color.text-center.fs-5.mb-4
-            | Este espacio ha sido diseñado especialmente para ustedes,
-            | profesionales de la salud, con el
-            | objetivo de brindar una plataforma moderna, segura y eficiente para acceder a información clínica,
-            | gestionar turnos, revisar historiales médicos, y mantenerse al tanto de las novedades institucionales.
-        
-          p.text-color.text-center.fs-5.mb-4
-            | Como parte fundamental del equipo Hospital Horizon, su compromiso
-            | con la atención médica de calidad es
-            | invaluable. Esta plataforma busca facilitar su labor diaria, fomentar la colaboración interdisciplinaria y
-            | garantizar el acceso oportuno a los recursos necesarios para una atención centrada en el paciente.
-          p.text-color.text-center.fs-5.mb-4
-            | ¡Gracias por su dedicación y profesionalismo!
+        include compartido/welcome
 
     script(src="/js/bootstrap.bundle.min.js")

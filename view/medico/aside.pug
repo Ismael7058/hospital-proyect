@@ -1,0 +1,33 @@
+aside.col-2.aside.bg-green-blue.p-0
+  nav
+    ul.list-style-none.m-0.ps-4.pe-3
+      li.fs-5.mt-3.mb-5
+        p.ms-2.text-white Menu
+
+      li
+        a.option(href="#")
+          img.icon(src="/img/casa.png", alt="Icono de Home")
+          span Home
+
+      li.cont-option.mt-3
+        button.btn-list(onclick="toggleList('listOne')")
+          img.icon(src="/img/paciente.png", alt="")
+          span  Gestión de Pacientes
+        ul.list#listOne
+          li.list-elem: a.text-white.text-decoration-none(href="#") Dar de alta al paciente
+          li.list-elem: a.text-white.text-decoration-none(href="#") Listar Paciente
+          li.list-elem: a.text-white.text-decoration-none(href="#") Buscar Paciente
+
+      li.cont-option.mt-3
+        button.btn-list(onclick="toggleList('listTwo')")
+          img.icon(src="/img/salud.png", alt="")
+          span  Atención Médica
+        ul.list#listTwo
+          li.list-elem: a.text-white.text-decoration-none(href="#") Administrar medicamentos
+          li.list-elem: a.text-white.text-decoration-none(href="#") Plan de atención
+          li.list-elem: a.text-white.text-decoration-none(href="#") Solicitar pruebas de diagnóstico
+
+      li.mt-3
+        a.option(href="#")
+          img.icon(src="/img/historial-medico.png", alt="Icono de Home")
+          span Historial Clínico
