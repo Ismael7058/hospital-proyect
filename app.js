@@ -3,8 +3,9 @@ const app = express();
 const path = require("path");
 
 const homeRouter = require("./router/homeRouter");
-
+const medicoRouter = require('./router/medicoRouter');
 app.use('/', homeRouter);
+app.use('/', medicoRouter);
 
 app.use(express.static(path.join(__dirname, "public")));
 
