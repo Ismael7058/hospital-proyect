@@ -1,0 +1,19 @@
+aside.col-2.aside.bg-green-blue.p-0
+  nav
+    ul.list-style-none.m-0.ps-4.pe-3
+      li.fs-5.mt-3.mb-5
+        p.ms-2.text-white Menu
+
+      li
+        a.option(href="#")
+          img.icon(src="/img/casa.png", alt="Icono de Home")
+          span Home
+
+      li.cont-option.mt-3
+        button.btn-list(onclick="toggleList('listOne')")
+          img.icon(src="/img/paciente.png", alt="")
+          span  Gestión de Pacientes
+        ul.list#listOne
+          li.list-elem: a.text-white.text-decoration-none(href="#") Buscar Paciente
+          li.list-elem: a.text-white.text-decoration-none(href="#") Internar Paciente
+          li.list-elem: a.text-white.text-decoration-none(href="#") Registrar Paciente

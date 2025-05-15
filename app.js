@@ -9,8 +9,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const homeRouter = require("./router/homeRouter");
 const medicoRouter = require('./router/medicoRouter');
+const recepcionRouter = require('./router/recepcionRouter')
 app.use('/', homeRouter);
 app.use('/', medicoRouter);
+app.use('/', recepcionRouter)
 
 
 app.use((req, res)=>{
