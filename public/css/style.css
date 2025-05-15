@@ -1,6 +1,12 @@
 .bg-green-blue {
   background-color: #22313b;
 }
+
+.bg-error{
+  background-image: url("../Img/error404.gif");
+  background-size: cover;
+}
+
 a{
   text-decoration: none;
 }

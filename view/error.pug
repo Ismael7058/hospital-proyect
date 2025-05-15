@@ -1,0 +1,23 @@
+doctype html
+html(lang="es")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Hospital Horizon
+    link(rel="stylesheet", href="/css/bootstrap.min.css")
+    link(rel="stylesheet", href="/css/styleError.css")
+  body.body
+    header.header
+      nav
+        ul.d-flex.flex-row.align-items-center.list-style-none.m-0.px-4
+          li.p-2.flex-grow-1
+            a.text-decoration-none.fs-5.text-white(href="/")
+              img(src="/img/logo.png", alt="Logo de la pagina")
+              span.fst-italic HospitalHorizon
+    main.bg-error
+      .d-flex.flex-column.m-5.p-5.text-start
+        h2.fs-1.mb-3 ¡Ups!
+        p.fs-4.mb-1 No encontramos la página que buscas.
+        p.fs-5.mb-1 Puede que la dirección esté mal escrita o que la página haya sido eliminada.
+        a.btn-home.text-decoration-none.p-2.my-3.fs-5(href="/") Inicio 
+    script(src="/js/bootstrap.bundle.min.js")
