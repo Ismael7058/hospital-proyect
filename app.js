@@ -10,9 +10,11 @@ app.use(express.static(path.join(__dirname, "public")));
 const homeRouter = require("./router/homeRouter");
 const medicoRouter = require('./router/medicoRouter');
 const recepcionRouter = require('./router/recepcionRouter')
+const enfermeroRouter = require('./router/enfermeroRouter')
 app.use('/', homeRouter);
 app.use('/', medicoRouter);
-app.use('/', recepcionRouter)
+app.use('/', recepcionRouter);
+app.use('/', enfermeroRouter);
 
 
 app.use((req, res)=>{
@@ -23,5 +25,5 @@ app.use((req, res)=>{
 
 app.set("port", process.env.PORT || 3030);
 
-module.exports = app
+module.exports = app;
 
