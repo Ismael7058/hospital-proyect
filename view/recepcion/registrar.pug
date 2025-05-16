@@ -1,0 +1,132 @@
+extends ../layout
+block content
+  include ../compartido/header
+  section.row.h-100.section
+    include aside
+    main.col-10.main-bg-img
+      .contenedor
+        h2.mb-4.text-center Registro de Paciente y Historial Clínico
+
+        // Botones para mostrar secciones
+        .text-center.mb-4
+          button.btn.btn-outline-primary.mx-2(type="button", onclick="mostrarSeccion('datos')") Datos Personales
+          button.btn.btn-outline-primary.mx-2(type="button", onclick="mostrarSeccion('clinico')") Historial Clínico
+          button.btn.btn-outline-primary.mx-2(type="button", onclick="mostrarSeccion('social')") Historial Social
+
+        form(action="/paciente/registrar" method="POST")
+          // 👉 DATOS PERSONALES
+          fieldset#datos(class="border p-3 mb-4 seccion-form")
+            legend.fw-bold.mb-3 Datos del Paciente
+            .row
+              .col-md-3.mb-3
+                label(for="dni") DNI
+                input.form-control(type="number" name="dni" required)
+              .col-md-5.mb-3
+                label(for="nombre") Nombre
+                input.form-control(type="text" name="nombre" required)
+              .col-md-4.mb-3
+                label(for="apellido") Apellido
+                input.form-control(type="text" name="apellido" required)
+
+              .col-md-3.mb-3
+                label(for="sexo") Sexo
+                select.form-select(name="sexo")
+                  option(value="M") Masculino
+                  option(value="F") Femenino
+                  option(value="O") Otro
+
+              .col-md-4.mb-3
+                label(for="fechaNacimiento") Fecha de Nacimiento
+                input.form-control(type="date" name="fechaNacimiento" required)
+
+              .col-md-5.mb-3
+                label(for="domicilio") Domicilio
+                input.form-control(type="text" name="domicilio" required)
+
+              .col-md-4.mb-3
+                label(for="nacionalidad") Nacionalidad
+                input.form-control(type="text" name="nacionalidad" required)
+
+              .col-md-4.mb-3
+                label(for="email") Email
+                input.form-control(type="email" name="email" required)
+
+              .col-md-4.mb-3
+                label(for="telefono") Telefono
+                input.form-control(type="number" name="telefono" required)
+          // 👉 HISTORIAL CLÍNICO
+          fieldset#clinico(class="border p-3 mb-4 seccion-form d-none")
+            legend.fw-bold.mb-3 Historial Clínico Inicial
+            .row
+              .col-md-6.mb-3
+                label(for="alergias") Alergias
+                input.form-control(type="text" name="alergias" placeholder="Ej. Penicilina")
+
+              .col-md-6.mb-3
+                label(for="enfermedades") Enfermedades Preexistentes
+                input.form-control(type="text" name="enfermedades" placeholder="Ej. Diabetes, Hipertensión")
+
+              .col-md-6.mb-3
+                label(for="antecedentes") Antecedentes Familiares
+                input.form-control(type="text" name="antecedentes")
+
+              .col-md-6.mb-3
+                label(for="medicacionActual") Medicación Actual
+                input.form-control(type="text" name="medicacionActual")
+
+              .col-md-6.mb-3
+                label(for="cirugiasPrevias") Cirugías Previas
+                input.form-control(type="text" name="cirugiasPrevias")
+                
+
+          fieldset#social(class="border p-3 mb-4 seccion-form d-none")
+            legend.fw-bold.mb-3 Historial Social
+            .row
+              .col-md-3.mb-3
+                label(for="tabaco") ¿Consume tabaco?
+                select.form-select(name="tabaco")
+                  option(value="no") No
+                  option(value="si") Sí
+              .col-md-3.mb-3
+                label(for="alcohol") ¿Consume alcohol?
+                select.form-select(name="alcohol")
+                  option(value="no") No
+                  option(value="si") Sí
+              .col-md-3.mb-3
+                label(for="drogas") ¿Usa drogas recreativas?
+                select.form-select(name="drogas")
+                  option(value="no") No
+                  option(value="si") Sí
+              .col-md-3.mb-3
+                label(for="infusiones") ¿Consume infusiones?
+                select.form-select(name="infusiones")
+                  option(value="no") No
+                  option(value="si") Sí
+              .col-md-4.mb-3
+                label(for="actividadFisica" ) Actividad Física Regular
+                select.form-select(name="actividadFisica")
+                  option(value="nula") Nula
+                  option(value="baja") 1–2 veces por semana
+                  option(value="moderada") 3–4 veces por semana
+                  option(value="alta") Diario
+
+              .col-md-6.mb-3
+                label(for="alimentacion") Alimentación
+                input.form-control(type="text" name="cirugialimentacionasPrevias" required)
+
+          .text-center.mt-4
+            button.btn.btn-primary.fixed-submit(type="submit") Registrar Paciente
+
+  // Script para manejar visibilidad
+  script.
+    function mostrarSeccion(id) {
+      const secciones = document.querySelectorAll('.seccion-form');
+      secciones.forEach(seccion => {
+        if (seccion.id === id) {
+          seccion.classList.remove('d-none');
+        } else {
+          seccion.classList.add('d-none');
+        }
+      });
+    }
+  
