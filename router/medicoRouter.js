@@ -2,6 +2,6 @@ const express = require('express');
 const router = express.Router();
 const medicoController = require('../controller/medicoController');
 
-router.get('/medico', medicoController.renderHome);
+router.get('/', medicoController.renderHome);
 
 module.exports = router;

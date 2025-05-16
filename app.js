@@ -12,9 +12,9 @@ const medicoRouter = require('./router/medicoRouter');
 const recepcionRouter = require('./router/recepcionRouter')
 const enfermeroRouter = require('./router/enfermeroRouter')
 app.use('/', homeRouter);
-app.use('/', medicoRouter);
-app.use('/', recepcionRouter);
-app.use('/', enfermeroRouter);
+app.use('/medico', medicoRouter);
+app.use('/recepcion', recepcionRouter);
+app.use('/enfermero', enfermeroRouter);
 
 
 app.use((req, res)=>{
