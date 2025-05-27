@@ -7,21 +7,7 @@ html(lang="es")
     link(rel="stylesheet", href="/css/bootstrap.min.css")
     link(rel="stylesheet", href="/css/style.css")
   body.body
-    header.header.bg-green-blue
-      nav
-        ul.d-flex.flex-row.align-items-center.list-style-none.m-0.px-4
-          li.p-2.flex-grow-1
-            a.text-decoration-none.fs-5.text-white(href="#")
-              img(src="/img/logo.png", alt="Logo de la pagina")
-              span.fst-italic HospitalHorizon
-          li.p-2
-            a.btn-register(href="#")
-              img.register-icon.icon-b(src="/img/lapiz.png", alt="Icono de Sign In")
-              span Sign Up
-          li.p-2
-            a.btn-sesion(href="#")
-              img.icon-b(src="/img/entrar.png", alt="Icono de Sign In")
-              span Sign In
+    include compartido/headerRol
 
     section.row.h-100.section
       aside.col-2.aside.bg-green-blue.p-0
@@ -29,11 +15,6 @@ html(lang="es")
           ul.list-style-none.m-0.ps-4.pe-3
             li.fs-5.mt-3.mb-5
               p.ms-2.text-white Menu
-            li
-              a.option(href="#")
-                img.icon(src="/img/casa.png", alt="Icono de Home")
-                span.fs-5 Home
-
       main.col-10.main-bg-img
         include compartido/welcome
 
