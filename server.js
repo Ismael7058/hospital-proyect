@@ -1,4 +1,5 @@
 const { app, sequelize } = require('./app');
+require('./model/index'); 
 
 const port = app.get('port');
 sequelize.sync({ alter: true }) 

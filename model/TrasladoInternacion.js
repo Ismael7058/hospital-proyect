@@ -1,0 +1,43 @@
+const { Model, DataTypes } = require("sequelize");
+const sequelize = require("./db");
+
+class TrasladoInternacion extends Model { }
+
+TrasladoInternacion.init(
+  {
+    fechaInicio: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    fechaFin: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    idAdmision: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'admision',
+        key: 'id'
+      }
+    },
+    idCama: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Cama',
+        key: 'id'
+      }
+    },
+    motivoCambio: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
+  }, {
+  sequelize,
+  modelName: "TrasladoInternacion",
+  tableName: "trasladoInternacion",
+}
+);
+
+module.exports = TrasladoInternacion;
