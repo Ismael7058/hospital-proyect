@@ -9,6 +9,7 @@ async function formularioRegistro(req, res) {
   res.render("recepcion/registrar", { nacionalidades, errores });
 };
 
+
 async function crearPaciente(req, res) {
   const paciente = {
     dni: req.body.dni,
@@ -42,8 +43,8 @@ async function crearPaciente(req, res) {
         nacionalidades
       });
     }
-    await Paciente.create(paciente);
-    res.redirect("/internar");
+    const newPaciente = await Paciente.create(paciente);
+    res.redirect(`/paciente/${newPaciente.id}`);
   } catch (error) {
   console.error("Error al crear el paciente:", error);
   if (error.name === "SequelizeValidationError") {
@@ -68,7 +69,19 @@ function validarCamposPaciente(datos) {
   return errores;
 };
 
+async function datosPaciente(req, res){
+  try {
+    const paciente = await Paciente.findByPk(req.params.id);
+    const nacionalidad = await Nacionalidad.findByPk(paciente.idNacionalidad);
+    res.render("recepcion/paciente", { paciente, nacionalidad });
+  } catch (error) {
+    console.error("Error al obtener los datos del paciente:", error);
+    res.status(500).send("Error al obtener los datos del paciente.");
+  }
+};
+
 module.exports = {
   formularioRegistro,
-  crearPaciente
+  crearPaciente,
+  datosPaciente
 };

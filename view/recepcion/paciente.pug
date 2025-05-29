@@ -1,0 +1,38 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+
+  section.row.h-100.section
+    include aside
+
+    main.col-10.main-bg-img
+      .contenedor
+        .container.col-5
+          .row
+            h2.text-center.mt-4 Gestion del Paciente
+            .container.border.border-4.rounded.mt-5
+              .conteiner.m-3
+                h3 Datos del Paciente
+                .conteiner
+                  p.fw-semibold DNI: 
+                    span.fw-normal #{paciente.dni}
+                  p.fw-semibold Nombre completo: 
+                    span.fw-normal #{paciente.nombre} #{paciente.apellido}
+                  p.fw-semibold Género: 
+                    span.fw-normal #{paciente.genero}
+                  p.fw-semibold Fecha de Nacimiento: 
+                    span.fw-normal #{paciente.fechaNacimiento}
+                  p.fw-semibold Nacionalidad: 
+                    span.fw-normal #{nacionalidad.nombre}
+                  p.fw-semibold Dirección: 
+                    span.fw-normal #{paciente.domicilio}
+                  p.fw-semibold Teléfono: 
+                    span.fw-normal #{paciente.telefono}
+                  p.fw-semibold Correo electrónico: 
+                    span.fw-normal #{paciente.correo}
+            .conteiner.mt-4.d-flex.justify-content-center.align-items-center 
+              a.btn.btn-outline-primary.mx-4(href=paciente.id+'/editar/') Editar Paciente
+              a.btn.btn-outline-success.mx-4(href=paciente.id+'/seguro/') Seguro Médico
+              a.btn.btn-outline-warning.mx-4(href=paciente.id+'/admitir/') Admitir Paciente
+

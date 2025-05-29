@@ -6,5 +6,8 @@ router.get('/', (req, res) => res.render('recepcion/home'));
 router.get('/registrar', recepcionController.formularioRegistro);
 router.post('/registrar', recepcionController.crearPaciente);
 
+router.get('/buscar/:id', recepcionController.datosPaciente);
+
+
 module.exports = router;
 
