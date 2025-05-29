@@ -5,128 +5,89 @@ block content
     include aside
     main.col-10.main-bg-img
       .contenedor
-        h2.mb-4.text-center Registro de Paciente y Historial Clínico
+        h2.mb-4.text-center.mt-4 Registrar Paciente
 
-        // Botones para mostrar secciones
-        .text-center.mb-4
-          button.btn.btn-outline-primary.mx-2(type="button", onclick="mostrarSeccion('datos')") Datos Personales
-          button.btn.btn-outline-primary.mx-2(type="button", onclick="mostrarSeccion('clinico')") Historial Clínico
-          button.btn.btn-outline-primary.mx-2(type="button", onclick="mostrarSeccion('social')") Historial Social
-
-        form(action="/paciente/registrar" method="POST")
-          // 👉 DATOS PERSONALES
-          fieldset#datos(class="border p-3 mb-4 seccion-form")
-            legend.fw-bold.mb-3 Datos del Paciente
-            .row
-              .col-md-3.mb-3
-                label(for="dni") DNI
-                input.form-control(type="number" name="dni" required)
-              .col-md-5.mb-3
-                label(for="nombre") Nombre
-                input.form-control(type="text" name="nombre" required)
+        form#registro-form.d-flex.flex-column.align-items-center(action="/recepcion/registrar" method="POST")
+          .border.p-3.mb-4.seccion-form.col-7.rounded
+            legend.fw-bold.mb-4 Datos del Paciente
+            .row 
               .col-md-4.mb-3
-                label(for="apellido") Apellido
-                input.form-control(type="text" name="apellido" required)
+                label.form-label(for="dni") DNI
+                input.form-control(type="number", name="dni", required)
 
-              .col-md-3.mb-3
-                label(for="sexo") Sexo
-                select.form-select(name="sexo")
+              .col-md-4.mb-3
+                label.form-label(for="nombre") Nombre
+                input.form-control(type="text", name="nombre", required)
+
+              .col-md-4.mb-3
+                label.form-label(for="apellido") Apellido
+                input.form-control(type="text", name="apellido", required)
+
+              .col-md-4.mb-3
+                label.form-label(for="fechaNacimiento") Fecha de Nacimiento
+                input.form-control(type="date", name="fechaNacimiento", required)
+
+              .col-md-4.mb-3
+                label.form-label(for="genero") Sexo
+                select.form-select(name="genero", required)
+                  option(value="", selected disabled) -- Seleccione --
                   option(value="M") Masculino
                   option(value="F") Femenino
-                  option(value="O") Otro
+
 
               .col-md-4.mb-3
-                label(for="fechaNacimiento") Fecha de Nacimiento
-                input.form-control(type="date" name="fechaNacimiento" required)
+                label.form-label(for="nacionalidad") Nacionalidad
+                select.form-select(name="nacionalidad", required)
+                  option(value="", selected disabled) -- Seleccione --
+                  each n in nacionalidades
+                    option(value=n.id)= n.nombre
 
-              .col-md-5.mb-3
-                label(for="domicilio") Domicilio
-                input.form-control(type="text" name="domicilio" required)
-
-              .col-md-4.mb-3
-                label(for="nacionalidad") Nacionalidad
-                input.form-control(type="text" name="nacionalidad" required)
-
-              .col-md-4.mb-3
-                label(for="email") Email
-                input.form-control(type="email" name="email" required)
-
-              .col-md-4.mb-3
-                label(for="telefono") Telefono
-                input.form-control(type="number" name="telefono" required)
-          // 👉 HISTORIAL CLÍNICO
-          fieldset#clinico(class="border p-3 mb-4 seccion-form d-none")
-            legend.fw-bold.mb-3 Historial Clínico Inicial
-            .row
-              .col-md-6.mb-3
-                label(for="alergias") Alergias
-                input.form-control(type="text" name="alergias" placeholder="Ej. Penicilina")
+              .col-md-12.mb-3
+                label.form-label(for="domicilio") Domicilio
+                input.form-control(type="text", name="domicilio", required)
 
               .col-md-6.mb-3
-                label(for="enfermedades") Enfermedades Preexistentes
-                input.form-control(type="text" name="enfermedades" placeholder="Ej. Diabetes, Hipertensión")
+                label.form-label(for="email") Email
+                input.form-control(type="email", name="email", required)
 
               .col-md-6.mb-3
-                label(for="antecedentes") Antecedentes Familiares
-                input.form-control(type="text" name="antecedentes")
-
-              .col-md-6.mb-3
-                label(for="medicacionActual") Medicación Actual
-                input.form-control(type="text" name="medicacionActual")
-
-              .col-md-6.mb-3
-                label(for="cirugiasPrevias") Cirugías Previas
-                input.form-control(type="text" name="cirugiasPrevias")
-                
-
-          fieldset#social(class="border p-3 mb-4 seccion-form d-none")
-            legend.fw-bold.mb-3 Historial Social
-            .row
-              .col-md-3.mb-3
-                label(for="tabaco") ¿Consume tabaco?
-                select.form-select(name="tabaco")
-                  option(value="no") No
-                  option(value="si") Sí
-              .col-md-3.mb-3
-                label(for="alcohol") ¿Consume alcohol?
-                select.form-select(name="alcohol")
-                  option(value="no") No
-                  option(value="si") Sí
-              .col-md-3.mb-3
-                label(for="drogas") ¿Usa drogas recreativas?
-                select.form-select(name="drogas")
-                  option(value="no") No
-                  option(value="si") Sí
-              .col-md-3.mb-3
-                label(for="infusiones") ¿Consume infusiones?
-                select.form-select(name="infusiones")
-                  option(value="no") No
-                  option(value="si") Sí
-              .col-md-4.mb-3
-                label(for="actividadFisica" ) Actividad Física Regular
-                select.form-select(name="actividadFisica")
-                  option(value="nula") Nula
-                  option(value="baja") 1–2 veces por semana
-                  option(value="moderada") 3–4 veces por semana
-                  option(value="alta") Diario
-
-              .col-md-6.mb-3
-                label(for="alimentacion") Alimentación
-                input.form-control(type="text" name="cirugialimentacionasPrevias" required)
-
+                label.form-label(for="telefono") Teléfono
+                input.form-control(type="number", name="telefono", required)
           .text-center.mt-4
             button.btn.btn-primary.fixed-submit(type="submit") Registrar Paciente
-
-  // Script para manejar visibilidad
+        // Modal de confirmación
+      div#confirmModal.modal.fade(tabindex="-1")
+        .modal-dialog
+          .modal-content
+            .modal-header.bg-info
+              h5.modal-title ¿Confirmar registro?
+              button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+            .modal-body.bg-light-subtle
+              p.fs-5 ¿Estás seguro de que todos los datos ingresados son correctos?
+            .modal-footer.bg-light.py-0.py-1
+              button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+              button#confirmarEnvio.btn.btn-primary(type="button") Confirmar
   script.
-    function mostrarSeccion(id) {
-      const secciones = document.querySelectorAll('.seccion-form');
-      secciones.forEach(seccion => {
-        if (seccion.id === id) {
-          seccion.classList.remove('d-none');
-        } else {
-          seccion.classList.add('d-none');
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById("registro-form");
+      const submitButton = form.querySelector("button[type='submit']");
+      const confirmModal = new bootstrap.Modal(document.getElementById("confirmModal"));
+      let confirmed = false;
+
+      form.addEventListener("submit", function (e) {
+        if (!confirmed) {
+          e.preventDefault();
+          confirmModal.show();
         }
       });
-    }
-  
+
+      document.getElementById("confirmarEnvio").addEventListener("click", function () {
+        confirmed = true;
+        confirmModal.hide();
+        form.submit(); // ahora sí se envía
+      });
+    });
+
+
+
+
