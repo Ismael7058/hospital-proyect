@@ -8,8 +8,9 @@ const Habitacion = require('./Habitacion');
 const Ala = require('./Ala');
 
 // Nacionalidad 1:N Paciente
-Nacionalidad.hasMany(Paciente, { foreignKey: 'idNacionalidad' });
-Paciente.belongsTo(Nacionalidad, { foreignKey: 'idNacionalidad' });
+Nacionalidad.hasMany(Paciente, { foreignKey: 'idNacionalidad', as: 'pacientes' });
+Paciente.belongsTo(Nacionalidad, { foreignKey: 'idNacionalidad', as: 'nacionalidad' });
+
 
 // Paciente 1:N SeguroMedico
 Paciente.hasMany(SeguroMedico, { foreignKey: 'idPaciente' });

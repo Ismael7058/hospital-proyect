@@ -25,8 +25,14 @@ Paciente.init(
     fechaNacimiento: {
       type: DataTypes.DATE,
       allowNull: false,
+      get() {
+        const raw = this.getDataValue('fechaNacimiento');
+        return raw
+          ? raw.toISOString().slice(0, 10)    // "YYYY-MM-DD"
+          : null;
+      }
     },
-    idNacionalidad:{
+    idNacionalidad: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -43,7 +49,7 @@ Paciente.init(
       allowNull: false,
       unique: true
     },
-    telefono:{
+    telefono: {
       type: DataTypes.INTEGER,
       allowNull: false
     }

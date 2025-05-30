@@ -1,0 +1,86 @@
+extends ../layout
+block content
+  include ../compartido/header
+  section.row.h-100.section
+    include aside
+    main.col-10.main-bg-img
+      .contenedor.d-flex.flex-column.align-items-center
+        h2.mb-4.text-center.mt-4 Buscar Paciente
+        // Modal para mensaje personalizado
+
+        .row.col-10
+          .col-4.d-flex.align-items-center
+            form#formBuscarPorDNI.col-6(action="/recepcion/buscar" method="POST")
+              .d-flex.align-items-center
+                input#dniBuscar.form-control.rounded-0.rounded-start(type="text", name="dni", placeholder=dniNoEncontrado ? dniNoEncontrado : "Ingresar DNI", required)
+                button#botonBuscar.btn.btn-primary.rounded-0.rounded-end.border-0(type="submit") Buscar
+
+            // 👉 Si hay mensaje, mostramos el aviso + botón de registrar
+            if dniNoEncontrado && dniNoEncontrado.length > 0
+              #mensajeDni.ms-3
+                a#btnRegistrar.btn.btn-success(href=`/recepcion/registrar?dni=${dniNoEncontrado}`) Registrar
+
+          .col-8.d-flex.justify-content-end
+            form#formBuscarPorDNI.col-12(action="/recepcion/buscar" method="POST")
+              .d-flex.row.justify-content-end
+                .col-10.d-flex.pe-0
+                  input.form-control.me-2(type="text" name="dni" id="dni" placeholder="Nombre" required)
+                  input.form-control(type="text" name="dni" id="dni" placeholder="Apellido" required)
+                .col-2
+                  button.btn.btn-primary(type="submit") Filtrar
+        .col-10.mt-4
+          table.table.table-hover.table-bordered
+            thead.table-dark
+              tr
+                th(scope="col") DNI
+                th(scope="col") Nombre
+                th(scope="col") Apellido
+                th(scope="col") Fecha de Nacimiento
+                th(scope="col") Nacionalidad
+                th(scope="col") Género
+                th(scope="col") Domicilio
+                th(scope="col") Acciones
+            if pacientes.length > 0
+              tbody
+                each paciente in pacientes
+                  tr
+                    td= paciente.dni
+                    td= paciente.nombre
+                    td= paciente.apellido
+                    td= paciente.fechaNacimiento
+                    td= paciente.genero
+                    td= paciente.domicilio
+                    td= paciente.nacionalidad.nombre
+                    td
+                      a.btn.btn-sm.btn-outline-secondary(href='/buscar/' + paciente.id) Ver
+
+  // 👉 Solo si el mensaje tiene contenido
+  if dniNoEncontrado && dniNoEncontrado.length > 0
+    script.
+      console.log(dniNoEncontrado)
+      var dniNoEncontrado = "#{dniNoEncontrado}";
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const dniInput = document.getElementById('dniBuscar');
+        const mensaje = document.getElementById('mensajeDni');
+        const botonBuscar = document.getElementById('botonBuscar');
+
+        if (dniNoEncontrado && botonBuscar) {
+          botonBuscar.classList.remove('btn-primary');
+          botonBuscar.classList.add('btn-danger');
+        }
+
+        dniInput?.addEventListener('input', () => {
+          mensaje?.remove();
+
+          if (botonBuscar?.classList.contains('btn-danger')) {
+            botonBuscar.classList.remove('btn-danger');
+            botonBuscar.classList.add('btn-primary');
+          }
+          dniInput.placeholder = "Ingresar DNI";
+        });
+      });
+
+
+
+
