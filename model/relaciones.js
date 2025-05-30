@@ -2,6 +2,7 @@ const Paciente = require('./Paciente');
 const Nacionalidad = require('./Nacionalidad');
 const Admision = require('./Admision');
 const SeguroMedico = require('./SeguroMedico');
+const SeguroPaciente = require('./SeguoPaciente'); // ¡Importante!
 const TrasladoInternacion = require('./TrasladoInternacion');
 const Cama = require('./Cama');
 const Habitacion = require('./Habitacion');
@@ -11,10 +12,24 @@ const Ala = require('./Ala');
 Nacionalidad.hasMany(Paciente, { foreignKey: 'idNacionalidad', as: 'pacientes' });
 Paciente.belongsTo(Nacionalidad, { foreignKey: 'idNacionalidad', as: 'nacionalidad' });
 
+// Paciente N:M SeguroMedico a través de SeguroPaciente
+Paciente.belongsToMany(SeguroMedico, {
+  through: SeguroPaciente,
+  foreignKey: 'idPaciente',
+  otherKey: 'idSeguroMedico',
+  as: 'segurosMedicos'
+});
 
-// Paciente 1:N SeguroMedico
-Paciente.hasMany(SeguroMedico, { foreignKey: 'idPaciente' });
-SeguroMedico.belongsTo(Paciente, { foreignKey: 'idPaciente' });
+SeguroMedico.belongsToMany(Paciente, {
+  through: SeguroPaciente,
+  foreignKey: 'idSeguroMedico',
+  otherKey: 'idPaciente',
+  as: 'pacientes'
+});
+
+// También podés acceder directamente a la tabla intermedia si lo necesitás:
+SeguroPaciente.belongsTo(Paciente, { foreignKey: 'idPaciente' });
+SeguroPaciente.belongsTo(SeguroMedico, { foreignKey: 'idSeguroMedico' });
 
 // Paciente 1:N Admision
 Paciente.hasMany(Admision, { foreignKey: 'idPaciente' });
@@ -36,4 +51,14 @@ Cama.belongsTo(Habitacion, { foreignKey: 'idHabitacion' });
 Ala.hasMany(Habitacion, { foreignKey: 'idAla' });
 Habitacion.belongsTo(Ala, { foreignKey: 'idAla' });
 
-module.exports = {Paciente, Nacionalidad, Admision, SeguroMedico, TrasladoInternacion, Cama, Habitacion, Ala};
+module.exports = {
+  Paciente,
+  Nacionalidad,
+  Admision,
+  SeguroMedico,
+  SeguroPaciente, // ¡Asegurate de exportarlo también!
+  TrasladoInternacion,
+  Cama,
+  Habitacion,
+  Ala
+};
