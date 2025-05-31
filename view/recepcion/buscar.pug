@@ -24,35 +24,38 @@ block content
             form#formBuscarPorDNI.col-12(action="/recepcion/buscar" method="POST")
               .d-flex.row.justify-content-end
                 .col-10.d-flex.pe-0
-                  input.form-control.me-2(type="text" name="dni" id="dni" placeholder="Nombre" required)
-                  input.form-control(type="text" name="dni" id="dni" placeholder="Apellido" required)
+                  input#inputNombre.form-control.me-2(type="text" placeholder="Nombre")
+                  input#inputApellido.form-control(type="text" placeholder="Apellido")
                 .col-2
                   button.btn.btn-primary(type="submit") Filtrar
         .col-10.mt-4
-          table.table.table-hover.table-bordered
-            thead.table-dark
-              tr
-                th(scope="col") DNI
-                th(scope="col") Nombre
-                th(scope="col") Apellido
-                th(scope="col") Fecha de Nacimiento
-                th(scope="col") Nacionalidad
-                th(scope="col") Género
-                th(scope="col") Domicilio
-                th(scope="col") Acciones
-            if pacientes.length > 0
-              tbody
-                each paciente in pacientes
-                  tr
-                    td= paciente.dni
-                    td= paciente.nombre
-                    td= paciente.apellido
-                    td= paciente.fechaNacimiento
-                    td= paciente.genero
-                    td= paciente.domicilio
-                    td= paciente.nacionalidad.nombre
-                    td
-                      a.btn.btn-sm.btn-outline-secondary(href='buscar/' + paciente.id) Ver
+          // Contenedor con altura fija y scroll
+          .table-responsive(style="max-height: 35rem; overflow-y: auto;")
+            table.table.table-hover.table-bordered
+              thead.table-dark
+                tr
+                  th(scope="col") DNI
+                  th(scope="col") Nombre
+                  th(scope="col") Apellido
+                  th(scope="col") Fecha de Nacimiento
+                  th(scope="col") Nacionalidad
+                  th(scope="col") Género
+                  th(scope="col") Domicilio
+                  th(scope="col") Acciones
+              if pacientes.length > 0
+                tbody
+                  each paciente in pacientes
+                    tr
+                      td= paciente.dni
+                      td= paciente.nombre
+                      td= paciente.apellido
+                      td= paciente.fechaNacimiento
+                      td= paciente.nacionalidad.nombre
+                      td= paciente.genero
+                      td= paciente.domicilio
+                      td.td-center
+                        a.btn.btn-sm.btn-outline-secondary(href='buscar/' + paciente.id) Ver
+
 
   // 👉 Solo si el mensaje tiene contenido
   if dniNoEncontrado && dniNoEncontrado.length > 0
@@ -80,6 +83,41 @@ block content
           dniInput.placeholder = "Ingresar DNI";
         });
       });
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputNombre = document.getElementById('inputNombre');
+      const inputApellido = document.getElementById('inputApellido');
+      const tabla = document.querySelector('table.table tbody');
+
+      function filtrarPacientes() {
+        const filtroNombre = inputNombre.value.toLowerCase();
+        const filtroApellido = inputApellido.value.toLowerCase();
+
+        const filas = tabla.querySelectorAll('tr');
+
+        filas.forEach(fila => {
+          const nombre = fila.children[1].textContent.toLowerCase();   // columna Nombre
+          const apellido = fila.children[2].textContent.toLowerCase(); // columna Apellido
+
+          // Mostrar fila si nombre contiene filtroNombre y apellido contiene filtroApellido
+          if (nombre.includes(filtroNombre) && apellido.includes(filtroApellido)) {
+            fila.style.display = '';
+          } else {
+            fila.style.display = 'none';
+          }
+        });
+      }
+
+      inputNombre.addEventListener('input', filtrarPacientes);
+      inputApellido.addEventListener('input', filtrarPacientes);
+    });
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('formBuscarPorDNI');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault(); // Cancela el envío del formulario
+      });
+    });
 
 
 
