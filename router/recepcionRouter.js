@@ -18,6 +18,9 @@ router.get('/buscar/:id/seguro', recepcionController.formularioSeguro);
 router.post('/buscar/:id/seguro', recepcionController.crearSeguroPaciente);
 router.post('/buscar/:id/seguro/editar', recepcionController.editarSeguroPaciente);
 
+// Editar datos del Paciente
+router.get('/buscar/:id/editar', recepcionController.formularioEditarPaciente);
+router.post('/buscar/:id/editar', recepcionController.actualizarPaciente);
 
 
 module.exports = router;

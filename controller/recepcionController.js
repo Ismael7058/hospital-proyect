@@ -66,7 +66,7 @@ async function crearPaciente(req, res) {
       });
     }
     const newPaciente = await Paciente.create(paciente);
-    res.redirect(`/paciente/${newPaciente.id}`);
+    res.redirect(`/recepcion/buscar/${newPaciente.id}`);
   } catch (error) {
     console.error("Error al crear el paciente:", error);
     if (error.name === "SequelizeValidationError") {
@@ -259,7 +259,54 @@ async function editarSeguroPaciente(req, res) {
   }
 }
 
+async function formularioEditarPaciente(req, res) {
+  const id = req.params.id;
+  try {
+    const paciente = await Paciente.findByPk(id, {
+      include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
+    });
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
 
+    const nacionalidades = await Nacionalidad.findAll();
+    res.render("recepcion/editar", { paciente, nacionalidades });
+  } catch (error) {
+    console.error("Error al obtener el paciente:", error.message, error.stack);
+    res.status(500).send("Error interno del servidor");
+  }
+}
+
+async function actualizarPaciente(req, res) {
+  const idPaciente = req.params.id;
+
+  const datosActualizados = {
+    dni: req.body.dni,
+    nombre: req.body.nombre,
+    apellido: req.body.apellido,
+    genero: req.body.genero,
+    fechaNacimiento: req.body.fechaNacimiento,
+    idNacionalidad: req.body.nacionalidad,
+    domicilio: req.body.domicilio,
+    email: req.body.email,
+    telefono: req.body.telefono
+  };
+
+  try {
+
+
+    const actualizado = await Paciente.update(datosActualizados, {
+      where: { id: idPaciente }
+    });
+
+    if (actualizado[0] === 0) {
+      return res.status(404).send("Paciente no encontrado.");
+    }
+
+    res.redirect(`/recepcion/buscar/${idPaciente}`);
+  } catch (error) {
+    console.error("Error al actualizar paciente:", error);
+    res.status(500).send("Error al actualizar los datos del paciente.");
+  }
+}
 module.exports = {
   formularioRegistro,
   crearPaciente,
@@ -269,4 +316,6 @@ module.exports = {
   formularioSeguro,
   crearSeguroPaciente,
   editarSeguroPaciente,
+  formularioEditarPaciente,
+  actualizarPaciente
 };
