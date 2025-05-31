@@ -165,3 +165,54 @@ block content
         botonGuardar.disabled = false;
       }
     }
+  script.
+    function mostrarFormulario(tipo) {
+      const agregar = document.getElementById('formAgregar');
+      const editar  = document.getElementById('formEditar');
+      if (tipo === 'agregar') {
+        agregar.style.display = 'block';
+        editar.style.display  = 'none';
+      } else {
+        agregar.style.display = 'none';
+        editar.style.display  = 'block';
+      }
+    }
+
+    function actualizarFormularioSeguro() {
+      const seguros = !{JSON.stringify(paciente.SeguroPacientes)};
+      const select  = document.getElementById('selectorSeguro');
+      const idSel   = select.value;
+
+      const inputId      = document.getElementById('idSeguro');
+      const numeroEdit   = document.getElementById('numeroAfiliadoEditar');
+      const vigenciaEdit = document.getElementById('fechaVigenciaEditar');
+      const finEdit      = document.getElementById('fechaFinalizacionEditar');
+      const botonGuardar = document.getElementById('botonGuardar');
+
+      if (idSel === 'nuevo') {
+        inputId.value        = '';
+        numeroEdit.value     = '';
+        vigenciaEdit.value   = '';
+        finEdit.value        = '';
+        botonGuardar.disabled = true;
+      } else {
+        const obj = seguros.find(s => String(s.id) === idSel);
+        inputId.value        = obj.id;
+        numeroEdit.value     = obj.numeroAfiliado;
+        vigenciaEdit.value   = obj.fechaVigencia.substring(0,10);
+        finEdit.value        = obj.fechaFinalizacion
+                                  ? obj.fechaFinalizacion.substring(0,10)
+                                  : '';
+        botonGuardar.disabled = false;
+      }
+    }
+
+    // Nuevo script para mostrar automáticamente el formulario de agregar si no hay seguros
+    document.addEventListener('DOMContentLoaded', function () {
+      const seguros = !{JSON.stringify(paciente.SeguroPacientes)};
+      if (!seguros || seguros.length === 0) {
+        // No hay seguros, mostramos el formulario para agregar
+        mostrarFormulario('agregar');
+      }
+    });
+

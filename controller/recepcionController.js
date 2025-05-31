@@ -217,7 +217,7 @@ async function crearSeguroPaciente(req, res) {
 
     // Si no existe, lo creamos y redirigimos
     await SeguroPaciente.create(seguroPacienteData);
-    res.redirect(`/seguro`);
+    res.redirect(`/recepcion/buscar/${pacienteId}/seguro`);
 
   } catch (error) {
     console.error("Error al crear el seguro del paciente:", error);
