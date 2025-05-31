@@ -1,6 +1,8 @@
 const Sequelize = require("sequelize");
 const Nacionalidad = require("../model/Nacionalidad");
 const Paciente = require("../model/Paciente");
+const SeguroPaciente = require("../model/SeguoPaciente");
+const SeguroMedico = require("../model/SeguroMedico");
 // Registrar Paciente Vista
 async function formularioRegistro(req, res) {
   const dni = req.query.dni || "";
@@ -9,9 +11,9 @@ async function formularioRegistro(req, res) {
   });
   const errores = req.query.errores || {};
 
-  
-  res.render("recepcion/registrar", { nacionalidades, errores , dni});
-  
+
+  res.render("recepcion/registrar", { nacionalidades, errores, dni });
+
 };
 
 async function formularioRegistro(req, res) {
@@ -52,7 +54,6 @@ async function crearPaciente(req, res) {
     return res.status(400).render("recepcion/registrar", { errores, nacionalidades });
   }
   try {
-    console.log("Datos del paciente:", paciente);
     const pacienteExiste = await Paciente.findOne({ where: { dni: paciente.dni } });
 
     if (pacienteExiste) {
@@ -111,8 +112,9 @@ async function datosPaciente(req, res) {
 }
 
 async function buscarPaciente(req, res) {
-  const { dni } = req.body;
+  const dni  = req.body.dni;
   try {
+
     const paciente = await Paciente.findOne({
       where: { dni },
       include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
@@ -143,17 +145,128 @@ async function buscarPacienteVista(req, res) {
     const pacientes = await Paciente.findAll({
       include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
     });
-    res.render("recepcion/buscar", { pacientes, mensaje: ""});
+    res.render("recepcion/buscar", { pacientes, mensaje: "" });
   } catch (error) {
     console.error("Error al obtener los pacientes:", error);
     res.status(500).send("Error al obtener los pacientes.");
   }
 }
 
+// Controlador
+async function formularioSeguro(req, res) {
+  const id = req.params.id;
+  try {
+    const paciente = await Paciente.findByPk(id, {
+      include: [
+        {
+          model: SeguroPaciente,
+          include: [
+            {
+              model: SeguroMedico,
+              attributes: ['nombre']
+            }
+          ]
+        }
+      ]
+    });
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
+
+    const seguroMedico = await SeguroMedico.findAll();
+    res.render("recepcion/seguro", { paciente, seguroMedico });
+
+  } catch (error) {
+    console.error("Error al obtener el paciente:", error.message, error.stack);
+    res.status(500).send("Error interno del servidor");
+  }
+}
+// Controlador para crear un nuevo SeguroPaciente
+async function crearSeguroPaciente(req, res) {
+  const pacienteId = req.params.id;
+  const seguroPacienteData = {
+    idSeguroMedico: req.body.seguroNuevo,              // select#seguroNuevo
+    idPaciente: pacienteId,
+    numeroAfiliado: req.body.numeroAfiliadoNuevo,      // input#numeroAfiliadoNuevo
+    fechaVigencia: req.body.fechaVigenciaNuevo,        // input#fechaVigenciaNuevo
+    fechaFinalizacion: req.body.fechaFinalizacionNuevo // input#fechaFinalizacionNuevo
+  };
+
+  try {
+    // Verificar si ya existe ese seguro para el paciente
+    const seguroExistente = await SeguroPaciente.findOne({
+      where: {
+        idSeguroMedico: seguroPacienteData.idSeguroMedico,
+        idPaciente: pacienteId
+      }
+    });
+
+    if (seguroExistente) {
+      // Si ya existe, recargamos la vista con mensaje de error
+      const [paciente, seguroMedico] = await Promise.all([
+        Paciente.findByPk(pacienteId, {
+          include: { model: SeguroPaciente, include: SeguroMedico }
+        }),
+        SeguroMedico.findAll()
+      ]);
+
+      return res.status(400).render("recepcion/seguro", {
+        errores: { seguro: "Ya existe ese seguro médico para este paciente" },
+        paciente,
+        seguroMedico
+      });
+    }
+
+    // Si no existe, lo creamos y redirigimos
+    await SeguroPaciente.create(seguroPacienteData);
+    res.redirect(`/seguro`);
+
+  } catch (error) {
+    console.error("Error al crear el seguro del paciente:", error);
+    res.status(500).send("Error interno al crear el seguro del paciente.");
+  }
+}
+
+
+// Controlador para editar un SeguroPaciente existente
+async function editarSeguroPaciente(req, res) {
+  const pacienteId = req.params.id;
+  const {
+    idSeguro,                     // hidden input#idSeguro
+    numeroAfiliadoEditar,         // input#numeroAfiliadoEditar
+    fechaVigenciaEditar,          // input#fechaVigenciaEditar
+    fechaFinalizacionEditar       // input#fechaFinalizacionEditar
+  } = req.body;
+  try {
+    // Buscamos el registro por PK
+    const seguroRegistro = await SeguroPaciente.findByPk(idSeguro);
+
+    if (!seguroRegistro) {
+      return res.status(404).send("No se encontró el seguro para actualizar.");
+    }
+
+    // Actualizamos los campos
+    await seguroRegistro.update({
+      numeroAfiliado: numeroAfiliadoEditar,
+      fechaVigencia: fechaVigenciaEditar,
+      fechaFinalizacion: fechaFinalizacionEditar
+    });
+
+    // Redirigimos de vuelta a la gestión de seguros
+    res.redirect(`/recepcion/buscar/${pacienteId}/seguro`);
+
+  } catch (error) {
+    console.error("Error al editar el seguro del paciente:", error);
+    res.status(500).send("Error interno al editar el seguro del paciente.");
+  }
+}
+
+
 module.exports = {
   formularioRegistro,
   crearPaciente,
   datosPaciente,
   buscarPaciente,
-  buscarPacienteVista
+  buscarPacienteVista,
+  formularioSeguro,
+  crearSeguroPaciente,
+  editarSeguroPaciente,
 };

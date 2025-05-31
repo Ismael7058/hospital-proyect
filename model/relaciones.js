@@ -27,9 +27,12 @@ SeguroMedico.belongsToMany(Paciente, {
   as: 'pacientes'
 });
 
-// También podés acceder directamente a la tabla intermedia si lo necesitás:
-SeguroPaciente.belongsTo(Paciente, { foreignKey: 'idPaciente' });
+SeguroMedico.hasMany(SeguroPaciente, { foreignKey: 'idSeguroMedico' });
 SeguroPaciente.belongsTo(SeguroMedico, { foreignKey: 'idSeguroMedico' });
+
+Paciente.hasMany(SeguroPaciente, { foreignKey: 'idPaciente' });
+SeguroPaciente.belongsTo(Paciente, { foreignKey: 'idPaciente' });
+
 
 // Paciente 1:N Admision
 Paciente.hasMany(Admision, { foreignKey: 'idPaciente' });
@@ -56,7 +59,7 @@ module.exports = {
   Nacionalidad,
   Admision,
   SeguroMedico,
-  SeguroPaciente, // ¡Asegurate de exportarlo también!
+  SeguroPaciente,
   TrasladoInternacion,
   Cama,
   Habitacion,

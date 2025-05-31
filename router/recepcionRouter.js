@@ -10,7 +10,14 @@ router.post('/registrar', recepcionController.crearPaciente);
 
 router.get('/buscar', recepcionController.buscarPacienteVista);
 router.post('/buscar', recepcionController.buscarPaciente); 
+
 router.get('/buscar/:id', recepcionController.datosPaciente);
+
+// Ver - agregar - editar seguros medicos del paciente
+router.get('/buscar/:id/seguro', recepcionController.formularioSeguro);
+router.post('/buscar/:id/seguro', recepcionController.crearSeguroPaciente);
+router.post('/buscar/:id/seguro/editar', recepcionController.editarSeguroPaciente);
+
 
 
 module.exports = router;
