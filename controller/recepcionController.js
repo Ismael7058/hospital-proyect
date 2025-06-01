@@ -1,8 +1,15 @@
 const Sequelize = require("sequelize");
+const { Op } = require("sequelize");
 const Nacionalidad = require("../model/Nacionalidad");
 const Paciente = require("../model/Paciente");
 const SeguroPaciente = require("../model/SeguoPaciente");
 const SeguroMedico = require("../model/SeguroMedico");
+const Admision = require("../model/Admision");
+const Ala = require("../model/Ala");
+const Habitacion = require("../model/Habitacion");
+const Cama = require("../model/Cama");
+const TrasladoInternacion = require("../model/TrasladoInternacion")
+
 // Registrar Paciente Vista
 async function formularioRegistro(req, res) {
   const dni = req.query.dni || "";
@@ -112,7 +119,7 @@ async function datosPaciente(req, res) {
 }
 
 async function buscarPaciente(req, res) {
-  const dni  = req.body.dni;
+  const dni = req.body.dni;
   try {
 
     const paciente = await Paciente.findOne({
@@ -307,6 +314,131 @@ async function actualizarPaciente(req, res) {
     res.status(500).send("Error al actualizar los datos del paciente.");
   }
 }
+
+
+
+
+async function formularioAdmitir(req, res) {
+  const idPaciente = req.params.id;
+
+
+  try {
+    const paciente = await Paciente.findByPk(idPaciente);
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
+
+    // 1️⃣ Buscar admisión activa (fechaFinalizacion = null)
+    const admisionActiva = await Admision.findOne({
+      where: {
+        idPaciente: idPaciente,
+        fechaEgreso: null
+      }
+    });
+
+    if (admisionActiva) {
+      res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
+    }
+
+    const alas = await Ala.findAll({
+      include: [{
+        model: Habitacion,
+        as: 'habitaciones',
+        attributes: ['id', 'numero'],
+        include: [{
+          model: Cama,
+          as: 'camas',
+          attributes: ['id', 'numero', 'estado'],
+          where: {
+            estado: true
+          },
+          required: false // ← Esto es importante para que las habitaciones sin camas disponibles también aparezcan
+        }]
+      }]
+    });
+
+    res.render("recepcion/admitir", { paciente, alas });
+  } catch (error) {
+    console.error("Error al obtener el paciente:", error.message, error.stack);
+    res.status(500).send("Error interno del servidor");
+  }
+}
+
+async function crearAdmision(req, res) {
+  const idPaciente = req.params.id;
+
+  const seguroNuevo = {
+    idSeguroMedico: req.body.idSeguroMedico,
+    idPaciente: idPaciente,
+    numeroAfiliado: req.body.numeroAfiliado,
+    fechaVigencia: new Date(req.body.fechaVigencia),
+    fechaFinalizacion: req.body.fechaFinalizacion ? new Date(req.body.fechaFinalizacion) : null
+  };
+
+  try {
+    const paciente = await Paciente.findByPk(idPaciente);
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
+
+    // 1️⃣ Buscar admisión activa (fechaFinalizacion = null)
+    const admisionActiva = await Admision.findOne({
+      where: {
+        idPaciente: idPaciente,
+        fechaEgreso: null
+      }
+    });
+
+    if (admisionActiva) {
+      return res.status(400).send("El paciente ya tiene una admisión activa.");
+    }
+
+    // 2️⃣ Buscar admisión con solapamiento de fechas
+    const admisionSolapada = await Admision.findOne({
+      where: {
+        idPaciente: idPaciente,
+        fechaEgreso: {
+          [Op.gt]: seguroNuevo.fechaVigencia
+        }
+      }
+    });
+
+    if (admisionSolapada) {
+      return res.status(400).send("Ya existe una admisión anterior con una fecha de finalización posterior a la fecha de vigencia solicitada.");
+    }
+
+    const cama = await Cama.findByPk(req.body.cama);
+    if (!cama || cama.ocupada) {
+      return res.status(400).send("La cama seleccionada no está disponible.");
+    }
+
+    // 3️⃣ Crear admisión (aquí también podrías agregar lógica para asignar cama, etc.)
+    const nuevaAdmision = await Admision.create({
+      idPaciente: idPaciente,
+      idSeguroMedico: seguroNuevo.idSeguroMedico,
+      fechaIngreso: new Date(),
+      fechaEgreso: null,
+      diagnosticoInicial: req.body.diagnosticoInicial  // ← si lo tenés en el modelo
+    });
+
+
+    if (nuevaAdmision) {
+      const nuevaTrasladoInternacion = await TrasladoInternacion.create({
+        fechaInicio: new Date(),
+        idAdmision: nuevaAdmision.id,
+        idCama: req.body.cama,
+        motivoCambio: null
+      })
+      await cama.update({ ocupada: true });
+    }
+
+    res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
+
+  } catch (error) {
+    console.error("Error al crear admisión:", error.message);
+    res.status(500).send("Error interno del servidor");
+  }
+}
+
+
+
+
 module.exports = {
   formularioRegistro,
   crearPaciente,
@@ -317,5 +449,7 @@ module.exports = {
   crearSeguroPaciente,
   editarSeguroPaciente,
   formularioEditarPaciente,
-  actualizarPaciente
+  actualizarPaciente,
+  formularioAdmitir,
+  crearAdmision
 };

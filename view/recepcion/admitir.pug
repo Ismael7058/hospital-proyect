@@ -1,0 +1,95 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+
+  section.row.h-100.section
+    include aside
+
+    main.col-10.main-bg-img
+      .contenedor
+        .container.col-8
+          .row
+            h2.text-center.mt-4 Admitir Paciente
+
+
+            .row.border.rounded.p-4.bg-light.shadow.mt-5
+              form.row(method="POST", action=`/recepcion/buscar/${paciente.id}/admitir`) 
+                .col-6.my-3
+                  label.form-label(for='dni') Número de Afiliado
+                  input.form-control#dni(
+                    type='text',
+                    name='dni', value=paciente.dni ? paciente.dni : ""
+                    required
+                  )
+                .col-6.my-3
+                  label.form-label(for="ala") Seleccionar Ala
+                  select.form-select(name="ala", id="ala", required)
+                    option(value="") -- Seleccionar --
+                    each ala in alas
+                      option(value=ala.id) #{ala.nombre}
+
+                .col-6.mb-3
+                  label.form-label(for="habitacion") Seleccionar Habitación
+                  select.form-select(name="habitacion", id="habitacion", required disabled)
+                    option(value="") -- Selecciona un ala primero --
+
+                .col-6.mb-3
+                  label.form-label(for="cama") Seleccionar Cama
+                  select.form-select(name="cama", id="cama", required disabled)
+                    option(value="") -- Selecciona una habitación primero --
+                .col-12.mb-3
+                  label.form-label(for="diagnosticoInicial") Diagnóstico
+                  textarea.form-control#diagnosticoInicial(
+                    name="diagnosticoInicial",
+                    rows="3",
+                    required
+                  )
+                .d-flex.justify-content-center
+                  button.btn.btn-primary.me-3(type="submit") Admitir Paciente
+                  a.btn.btn-outline-secondary.ms-3(href='../') Cancelar
+  script.
+    const dataAlaHabitaciones = !{JSON.stringify(alas)};
+
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const alaSelect = document.getElementById('ala');
+      const habitacionSelect = document.getElementById('habitacion');
+      const camaSelect = document.getElementById('cama');
+
+      alaSelect.addEventListener('change', () => {
+        const alaId = alaSelect.value;
+        habitacionSelect.innerHTML = '<option value="">-- Selecciona una habitación --</option>';
+        camaSelect.innerHTML = '<option value="">-- Selecciona una habitación primero --</option>';
+        habitacionSelect.disabled = true;
+        camaSelect.disabled = true;
+
+        if (!alaId) return;
+
+        const alaSeleccionada = dataAlaHabitaciones.find(ala => ala.id == alaId);
+        if (alaSeleccionada && alaSeleccionada.habitaciones.length > 0) {
+          habitacionSelect.disabled = false;
+          alaSeleccionada.habitaciones.forEach(h => {
+            habitacionSelect.innerHTML += `<option value="${h.id}">Habitación ${h.numero}</option>`;
+          });
+        }
+      });
+
+      habitacionSelect.addEventListener('change', () => {
+        const alaId = alaSelect.value;
+        const habitacionId = habitacionSelect.value;
+        camaSelect.innerHTML = '<option value="">-- Selecciona una habitación primero --</option>';
+        camaSelect.disabled = true;
+
+        const alaSeleccionada = dataAlaHabitaciones.find(ala => ala.id == alaId);
+        const habitacionSeleccionada = alaSeleccionada?.habitaciones.find(h => h.id == habitacionId);
+
+        if (habitacionSeleccionada && habitacionSeleccionada.camas.length > 0) {
+          camaSelect.disabled = false;
+          camaSelect.innerHTML = '<option value="">-- Seleccionar cama --</option>';
+          habitacionSeleccionada.camas.forEach(c => {
+            camaSelect.innerHTML += `<option value="${c.id}">Cama ${c.numero}</option>`;
+          });
+        }
+      });
+    });
