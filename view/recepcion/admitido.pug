@@ -1,0 +1,73 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+
+  section.row.h-100.section
+    include aside
+
+    main.col-10.main-bg-img
+      .contenedor
+        .container.col-10
+          .row
+            .col-12
+              h2.text-center.mt-4.text-primary
+                i.fas.fa-user-check.mr-2
+                | Paciente Admitido
+
+          .row.justify-content-center
+            .col-md-10.col-lg-8
+              .card.shadow-lg.mt-4.mb-5
+                .card-header.bg-info.text-white
+                  h4.mb-0
+                    i.fas.fa-id-card.mr-2
+                    | Datos del Paciente
+
+                .card-body
+                  dl.row
+                    dt.col-sm-4 Nombre Completo:
+                    dd.col-sm-8 #{paciente.nombre} #{paciente.apellido}
+
+                    dt.col-sm-4 DNI:
+                    dd.col-sm-8 #{paciente.dni}
+
+              .card.shadow-lg.mt-4.mb-5
+                .card-header.bg-secondary.text-white
+                  h4.mb-0
+                    i.fas.fa-hospital-user.mr-2
+                    | Información de la Admisión
+
+                .card-body
+                  dl.row
+                    dt.col-sm-5 Fecha de Ingreso:
+                    dd.col-sm-7 #{admisionActiva.fechaIngreso.toLocaleDateString()}
+
+                    dt.col-sm-5 Diagnóstico Inicial:
+                    dd.col-sm-7 #{admisionActiva.diagnosticoInicial}
+
+                    dt.col-sm-5 Ala:
+                    dd.col-sm-7
+                      if admisionActiva.ala
+                        | #{admisionActiva.ala.nombre}
+                      else
+                        span.text-muted No disponible
+
+                    dt.col-sm-5 Habitación:
+                    dd.col-sm-7
+                      if admisionActiva.habitacion
+                        | #{admisionActiva.habitacion.numero}
+                      else
+                        span.text-muted No disponible
+
+                    dt.col-sm-5 Cama:
+                    dd.col-sm-7
+                      if admisionActiva.cama
+                        | #{admisionActiva.cama.numero}
+                      else
+                        span.text-muted No disponible
+
+          .row.mt-4
+            .col-12.text-center
+              a.btn.btn-outline-secondary.btn-lg(href='./')
+                i.fas.fa-arrow-left.mr-2
+                | Volver

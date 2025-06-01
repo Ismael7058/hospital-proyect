@@ -326,7 +326,7 @@ async function formularioAdmitir(req, res) {
     const paciente = await Paciente.findByPk(idPaciente);
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
-    // 1️⃣ Buscar admisión activa (fechaFinalizacion = null)
+    // Buscar admisión activa (fechaEgreso = null)
     const admisionActiva = await Admision.findOne({
       where: {
         idPaciente: idPaciente,
@@ -335,7 +335,7 @@ async function formularioAdmitir(req, res) {
     });
 
     if (admisionActiva) {
-      res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
+      return res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
     }
 
     const alas = await Ala.findAll({
@@ -350,7 +350,7 @@ async function formularioAdmitir(req, res) {
           where: {
             estado: true
           },
-          required: false // ← Esto es importante para que las habitaciones sin camas disponibles también aparezcan
+          required: false
         }]
       }]
     });
@@ -377,7 +377,7 @@ async function crearAdmision(req, res) {
     const paciente = await Paciente.findByPk(idPaciente);
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
-    // 1️⃣ Buscar admisión activa (fechaFinalizacion = null)
+    // 1️Buscar admisión activa (fechaEgreso = null)
     const admisionActiva = await Admision.findOne({
       where: {
         idPaciente: idPaciente,
@@ -389,7 +389,7 @@ async function crearAdmision(req, res) {
       return res.status(400).send("El paciente ya tiene una admisión activa.");
     }
 
-    // 2️⃣ Buscar admisión con solapamiento de fechas
+    // Buscar admisión con fechas de finalizacion posterior a la fecha que se intenta ingresar
     const admisionSolapada = await Admision.findOne({
       where: {
         idPaciente: idPaciente,
@@ -403,22 +403,24 @@ async function crearAdmision(req, res) {
       return res.status(400).send("Ya existe una admisión anterior con una fecha de finalización posterior a la fecha de vigencia solicitada.");
     }
 
+    // Verifica que la cama no este ocupada
     const cama = await Cama.findByPk(req.body.cama);
     if (!cama || cama.ocupada) {
       return res.status(400).send("La cama seleccionada no está disponible.");
     }
 
-    // 3️⃣ Crear admisión (aquí también podrías agregar lógica para asignar cama, etc.)
+    // Crear admisión
     const nuevaAdmision = await Admision.create({
       idPaciente: idPaciente,
       idSeguroMedico: seguroNuevo.idSeguroMedico,
       fechaIngreso: new Date(),
       fechaEgreso: null,
-      diagnosticoInicial: req.body.diagnosticoInicial  // ← si lo tenés en el modelo
+      diagnosticoInicial: req.body.diagnosticoInicial
     });
 
 
     if (nuevaAdmision) {
+      // Crear TrasladoInternacion que registra los movimientos de traslado de cama del paciente
       const nuevaTrasladoInternacion = await TrasladoInternacion.create({
         fechaInicio: new Date(),
         idAdmision: nuevaAdmision.id,
@@ -432,6 +434,62 @@ async function crearAdmision(req, res) {
 
   } catch (error) {
     console.error("Error al crear admisión:", error.message);
+    res.status(500).send("Error interno del servidor");
+  }
+}
+
+
+async function admicionVista(req, res) {
+  const idPaciente = req.params.id;
+
+  try {
+    const paciente = await Paciente.findByPk(idPaciente);
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
+
+    const admisionActiva = await Admision.findOne({
+      where: {
+        idPaciente,
+        fechaEgreso: null
+      },
+      include: [{
+        model: TrasladoInternacion,
+        include: [{
+          model: Cama,
+          include: [{
+            model: Habitacion,
+            as: 'habitacion',
+            include: [{
+              model: Ala,
+              as: 'ala'
+            }]
+          }]
+        }]
+      }]
+    });
+
+    if (!admisionActiva || admisionActiva.TrasladoInternacions.length === 0) {
+      return res.status(404).send("No se encontró información de cama asignada");
+    }
+
+    // Tomamos el último traslado (el más reciente)
+    const ultimoTraslado = admisionActiva.TrasladoInternacions[admisionActiva.TrasladoInternacions.length - 1];
+    const cama = ultimoTraslado.Cama;
+    const habitacion = cama?.habitacion;
+    const ala = habitacion?.ala;
+
+    res.render("recepcion/admitido", {
+      paciente,
+      admisionActiva: {
+        fechaIngreso: admisionActiva.fechaIngreso,
+        diagnosticoInicial: admisionActiva.diagnosticoInicial,
+        cama,
+        habitacion,
+        ala
+      }
+    });
+
+  } catch (error) {
+    console.error("Error en formularioAdmitido:", error.message, error.stack);
     res.status(500).send("Error interno del servidor");
   }
 }
@@ -451,5 +509,6 @@ module.exports = {
   formularioEditarPaciente,
   actualizarPaciente,
   formularioAdmitir,
-  crearAdmision
+  crearAdmision,
+  admicionVista
 };

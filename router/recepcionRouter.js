@@ -25,6 +25,7 @@ router.post('/buscar/:id/editar', recepcionController.actualizarPaciente);
 // Admitir paciente
 router.get('/buscar/:id/admitir', recepcionController.formularioAdmitir);
 router.post ('/buscar/:id/admitir', recepcionController.crearAdmision);
+router.get('/buscar/:id/admitido', recepcionController.admicionVista)
 
 module.exports = router;
 
