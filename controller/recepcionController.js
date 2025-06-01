@@ -323,21 +323,6 @@ async function formularioAdmitir(req, res) {
 
 
   try {
-    const paciente = await Paciente.findByPk(idPaciente);
-    if (!paciente) return res.status(404).send("Paciente no encontrado");
-
-    // Buscar admisión activa (fechaEgreso = null)
-    const admisionActiva = await Admision.findOne({
-      where: {
-        idPaciente: idPaciente,
-        fechaEgreso: null
-      }
-    });
-
-    if (admisionActiva) {
-      return res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
-    }
-
     const alas = await Ala.findAll({
       include: [{
         model: Habitacion,
@@ -354,8 +339,26 @@ async function formularioAdmitir(req, res) {
         }]
       }]
     });
+    if (idPaciente != undefined) {
+      const paciente = await Paciente.findByPk(idPaciente);
+      if (!paciente) return res.status(404).send("Paciente no encontrado");
 
-    res.render("recepcion/admitir", { paciente, alas });
+      // Buscar admisión activa (fechaEgreso = null)
+      const admisionActiva = await Admision.findOne({
+        where: {
+          idPaciente: idPaciente,
+          fechaEgreso: null
+        }
+      });
+
+      if (admisionActiva) {
+        return res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
+      }
+      res.render("recepcion/admitir", { paciente, alas });
+    }else {
+      res.render("recepcion/admitir", { alas });
+    }
+
   } catch (error) {
     console.error("Error al obtener el paciente:", error.message, error.stack);
     res.status(500).send("Error interno del servidor");
@@ -363,19 +366,33 @@ async function formularioAdmitir(req, res) {
 }
 
 async function crearAdmision(req, res) {
-  const idPaciente = req.params.id;
-
-  const seguroNuevo = {
-    idSeguroMedico: req.body.idSeguroMedico,
-    idPaciente: idPaciente,
-    numeroAfiliado: req.body.numeroAfiliado,
-    fechaVigencia: new Date(req.body.fechaVigencia),
-    fechaFinalizacion: req.body.fechaFinalizacion ? new Date(req.body.fechaFinalizacion) : null
-  };
+  const idPacienteParam = req.params.id;
+  const dni = req.body.dni;
 
   try {
-    const paciente = await Paciente.findByPk(idPaciente);
-    if (!paciente) return res.status(404).send("Paciente no encontrado");
+    let paciente;
+
+    if (idPacienteParam) {
+      paciente = await Paciente.findByPk(idPacienteParam);
+    } else if (dni) {
+      paciente = await Paciente.findOne({ where: { dni: dni } });
+    } else {
+      return res.status(400).send("Se requiere ID o DNI del paciente");
+    }
+
+    if (!paciente) {
+      return res.status(404).send("Paciente no encontrado");
+    }
+
+    const idPaciente = paciente.id;
+
+    const seguroNuevo = {
+      idSeguroMedico: req.body.idSeguroMedico,
+      idPaciente: idPaciente,
+      numeroAfiliado: req.body.numeroAfiliado,
+      fechaVigencia: new Date(req.body.fechaVigencia),
+      fechaFinalizacion: req.body.fechaFinalizacion ? new Date(req.body.fechaFinalizacion) : null
+    };
 
     // 1️Buscar admisión activa (fechaEgreso = null)
     const admisionActiva = await Admision.findOne({
@@ -418,7 +435,6 @@ async function crearAdmision(req, res) {
       diagnosticoInicial: req.body.diagnosticoInicial
     });
 
-
     if (nuevaAdmision) {
       // Crear TrasladoInternacion que registra los movimientos de traslado de cama del paciente
       const nuevaTrasladoInternacion = await TrasladoInternacion.create({
@@ -426,7 +442,7 @@ async function crearAdmision(req, res) {
         idAdmision: nuevaAdmision.id,
         idCama: req.body.cama,
         motivoCambio: null
-      })
+      });
       await cama.update({ ocupada: true });
     }
 
@@ -437,6 +453,7 @@ async function crearAdmision(req, res) {
     res.status(500).send("Error interno del servidor");
   }
 }
+
 
 
 async function admicionVista(req, res) {

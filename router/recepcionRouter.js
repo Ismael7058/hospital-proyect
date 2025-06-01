@@ -27,5 +27,9 @@ router.get('/buscar/:id/admitir', recepcionController.formularioAdmitir);
 router.post ('/buscar/:id/admitir', recepcionController.crearAdmision);
 router.get('/buscar/:id/admitido', recepcionController.admicionVista)
 
+router.get('/admitir', recepcionController.formularioAdmitir)
+router.post('/admitir', recepcionController.crearAdmision)
+
+
 module.exports = router;
 
