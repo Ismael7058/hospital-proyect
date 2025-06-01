@@ -47,12 +47,12 @@ Cama.hasMany(TrasladoInternacion, { foreignKey: 'idCama' });
 TrasladoInternacion.belongsTo(Cama, { foreignKey: 'idCama' });
 
 // Habitacion 1:N Cama
-Habitacion.hasMany(Cama, { foreignKey: 'idHabitacion' });
-Cama.belongsTo(Habitacion, { foreignKey: 'idHabitacion' });
+Habitacion.hasMany(Cama, { foreignKey: 'idHabitacion', as: "camas"});
+Cama.belongsTo(Habitacion, { foreignKey: 'idHabitacion', as: "habitacion" });
 
 // Ala 1:N Habitacion
-Ala.hasMany(Habitacion, { foreignKey: 'idAla' });
-Habitacion.belongsTo(Ala, { foreignKey: 'idAla' });
+Ala.hasMany(Habitacion, { foreignKey: 'idAla', as: "habitaciones" });
+Habitacion.belongsTo(Ala, { foreignKey: 'idAla', as: "ala" });
 
 module.exports = {
   Paciente,

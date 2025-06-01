@@ -11,7 +11,7 @@ Admision.init(
     },
     fechaEgreso: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: true
     },
     diagnosticoInicial: {
       type: DataTypes.STRING,
