@@ -31,5 +31,6 @@ router.get('/admitir', recepcionController.formularioAdmitir)
 router.post('/admitir', recepcionController.crearAdmision)
 
 
+
 module.exports = router;
 

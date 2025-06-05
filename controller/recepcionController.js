@@ -1,14 +1,19 @@
-const Sequelize = require("sequelize");
+const {
+  sequelize,
+  Nacionalidad,
+  Paciente,
+  SeguroPaciente,
+  SeguroMedico,
+  Admision,
+  Ala,
+  Habitacion,
+  Cama,
+  TrasladoInternacion,
+  AdmisionProv
+} = require("../model");
+
 const { Op } = require("sequelize");
-const Nacionalidad = require("../model/Nacionalidad");
-const Paciente = require("../model/Paciente");
-const SeguroPaciente = require("../model/SeguoPaciente");
-const SeguroMedico = require("../model/SeguroMedico");
-const Admision = require("../model/Admision");
-const Ala = require("../model/Ala");
-const Habitacion = require("../model/Habitacion");
-const Cama = require("../model/Cama");
-const TrasladoInternacion = require("../model/TrasladoInternacion")
+
 
 // Registrar Paciente Vista
 async function formularioRegistro(req, res) {
@@ -511,6 +516,60 @@ async function admicionVista(req, res) {
   }
 }
 
+async function formularioEmergencia(req, res) {
+  try {
+    const alas = await Ala.findAll({
+      where: {
+        id: 4
+      },
+      include: [
+        {
+          model: Habitacion,
+          as: 'habitaciones',
+          attributes: ['id', 'numero'],
+          include: [
+            {
+              model: Cama,
+              as: 'camas',
+              attributes: ['id', 'numero', 'estado'],
+              where: {
+                estado: true
+              },
+              required: false,
+              include: [
+                {
+                  model: TrasladoInternacion,
+                  as: 'trasladosInternacion',
+                  attributes: ['id'],
+                  where:{
+                    fechaFin: null 
+                  },
+                  required: false,
+                  include: [
+                    {
+                      model: AdmisionProv,
+                      as: 'admisionProvisional',
+                      attributes: ['generoPaciente']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+
+    res.render("recepcion/admitirEmergencia", {
+      alasEmergencia: alas
+    });
+  } catch (error) {
+    console.error('Error al cargar formulario emergencia:', error);
+    res.status(500).send('Error interno al cargar el formulario');
+  }
+}
+
+
 
 
 
@@ -527,5 +586,6 @@ module.exports = {
   actualizarPaciente,
   formularioAdmitir,
   crearAdmision,
-  admicionVista
+  admicionVista,
+  formularioEmergencia,
 };
