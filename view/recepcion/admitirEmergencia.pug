@@ -1,0 +1,113 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+
+  section.row.h-100.section
+    include aside
+
+    main.col-10.main-bg-img
+      .contenedor
+        .container.col-10
+          .row
+            .col-12
+              h2.text-center.mt-4.text-danger
+                i.fas.fa-ambulance.mr-2
+                | Admisión por Emergencia
+
+          .row.justify-content-center
+            .col-md-10.col-lg-8
+              .card.shadow-lg.mt-4.mb-5
+
+                .card-body
+                  form#formEmergencia.row(method="POST", action="/recepcion/admitirEmergencia")
+                    .col-md-4.mb-3
+                      label.form-label(for="dni") DNI (si lo sabe):
+                      input.form-control(type="text", id="dni", name="dni")
+
+                    .col-md-4.mb-3
+                      label.form-label(for="nombre") Nombre (si lo sabe):
+                      input.form-control(type="text", name="nombre")
+
+                    .col-md-4.mb-3
+                      label.form-label(for="apellido") Apellido (si lo sabe):
+                      input.form-control(type="text", name="apellido")
+
+                    .col-md-4.mb-3
+                      label.form-label(for="genero") Sexo
+                      select.form-select(name="genero", required)
+                        option(value="", selected disabled) -- Seleccione --
+                        option(value="Masculino") Masculino
+                        option(value="Femenino") Femenino
+
+                    .col-md-4.mb-3
+                      label.form-label(for="habitacion") Habitación:
+                      select.form-select(name="habitacion", id="habitacion" required)
+                        option(value="") -- Seleccionar ala primero --
+
+                    .col-md-4.mb-3
+                      label.form-label(for="cama") Cama disponible:
+                      select.form-select(name="cama", id="cama" required)
+                        option(value="") -- Seleccionar habitación primero --
+                    
+                    .mb-3
+                      label.form-label(for="diagnosticoInicial") Diagnóstico preliminar:
+                      textarea.form-control#diagnosticoInicial(
+                        name="diagnosticoInicial",
+                        rows="3",
+                        required
+                      )
+
+
+                    .text-center
+                      button.btn.btn-danger.mt-3(type="submit")
+                        i.fas.fa-user-plus.mr-2
+                        | Admitir de Emergencia
+
+  script.
+    const alasData = !{JSON.stringify(alasEmergencia)};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const alaSelect = document.getElementById('ala');
+      const habitacionSelect = document.getElementById('habitacion');
+      const camaSelect = document.getElementById('cama');
+
+      alaSelect.addEventListener('change', () => {
+        const alaId = parseInt(alaSelect.value);
+        habitacionSelect.innerHTML = '<option value="">-- Seleccionar ala primero --</option>';
+        camaSelect.innerHTML = '<option value="">-- Seleccionar habitación primero --</option>';
+
+        const ala = alasData.find(a => a.id === alaId);
+        if (!ala) return;
+
+        if (ala.habitaciones.length === 0) {
+          habitacionSelect.innerHTML = '<option value="">(Sin habitaciones)</option>';
+          return;
+        }
+
+        habitacionSelect.innerHTML = '<option value="">-- Seleccione una habitación --</option>';
+        ala.habitaciones.forEach(hab => {
+          habitacionSelect.innerHTML += `<option value="${hab.id}">N° ${hab.numero}</option>`;
+        });
+      });
+
+      habitacionSelect.addEventListener('change', () => {
+        const alaId = parseInt(alaSelect.value);
+        const habitacionId = parseInt(habitacionSelect.value);
+        camaSelect.innerHTML = '<option value="">-- Seleccionar habitación primero --</option>';
+
+        const ala = alasData.find(a => a.id === alaId);
+        if (!ala) return;
+
+        const habitacion = ala.habitaciones.find(h => h.id === habitacionId);
+        if (!habitacion || !habitacion.camas || habitacion.camas.length === 0) {
+          camaSelect.innerHTML = '<option value="">(Sin camas disponibles)</option>';
+          return;
+        }
+
+        camaSelect.innerHTML = '<option value="">-- Seleccione una cama --</option>';
+        habitacion.camas.forEach(cama => {
+          camaSelect.innerHTML += `<option value="${cama.id}">Cama ${cama.numero}</option>`;
+        });
+      });
+    });
