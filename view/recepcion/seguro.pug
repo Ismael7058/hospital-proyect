@@ -207,11 +207,9 @@ block content
       }
     }
 
-    // Nuevo script para mostrar automáticamente el formulario de agregar si no hay seguros
     document.addEventListener('DOMContentLoaded', function () {
       const seguros = !{JSON.stringify(paciente.SeguroPacientes)};
       if (!seguros || seguros.length === 0) {
-        // No hay seguros, mostramos el formulario para agregar
         mostrarFormulario('agregar');
       }
     });

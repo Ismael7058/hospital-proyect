@@ -27,7 +27,7 @@ block content
                   input#inputNombre.form-control.me-2(type="text" placeholder="Nombre")
                   input#inputApellido.form-control(type="text" placeholder="Apellido")
                 .col-2
-                  button.btn.btn-primary(type="submit") Filtrar
+                  button.btn.btn-primary(type="submitFiltro") Filtrar
         .col-10.mt-4
           // Contenedor con altura fija y scroll
           .table-responsive(style="max-height: 35rem; overflow-y: auto;")
@@ -114,7 +114,7 @@ block content
   script.
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('formBuscarPorDNI');
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submitFiltro', (e) => {
         e.preventDefault(); // Cancela el envío del formulario
       });
     });

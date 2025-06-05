@@ -20,22 +20,22 @@ block content
               .card.shadow-lg.mt-4.mb-5
 
                 .card-body
-                  form#formEmergencia.row(method="POST", action="/recepcion/admitirEmergencia")
+                  form#formEmergencia.row(method="POST", action="/recepcion/emergencia")
                     .col-md-4.mb-3
                       label.form-label(for="dni") DNI (si lo sabe):
                       input.form-control(type="text", id="dni", name="dni")
 
                     .col-md-4.mb-3
                       label.form-label(for="nombre") Nombre (si lo sabe):
-                      input.form-control(type="text", name="nombre")
+                      input.form-control(type="text", id="nombre", name="nombre")
 
                     .col-md-4.mb-3
                       label.form-label(for="apellido") Apellido (si lo sabe):
-                      input.form-control(type="text", name="apellido")
+                      input.form-control(type="text", id="apellido", name="apellido")
 
                     .col-md-4.mb-3
                       label.form-label(for="genero") Sexo
-                      select.form-select(name="genero", required)
+                      select.form-select(name="genero", id="genero" required)
                         option(value="", selected disabled) -- Seleccione --
                         option(value="Masculino") Masculino
                         option(value="Femenino") Femenino
@@ -43,13 +43,13 @@ block content
                     .col-md-4.mb-3
                       label.form-label(for="habitacion") Habitación:
                       select.form-select(name="habitacion", id="habitacion" required)
-                        option(value="") -- Seleccionar ala primero --
+                        option(value="") -- Cargando habitaciones --
 
                     .col-md-4.mb-3
                       label.form-label(for="cama") Cama disponible:
                       select.form-select(name="cama", id="cama" required)
                         option(value="") -- Seleccionar habitación primero --
-                    
+
                     .mb-3
                       label.form-label(for="diagnosticoInicial") Diagnóstico preliminar:
                       textarea.form-control#diagnosticoInicial(
@@ -57,7 +57,6 @@ block content
                         rows="3",
                         required
                       )
-
 
                     .text-center
                       button.btn.btn-danger.mt-3(type="submit")
@@ -68,38 +67,40 @@ block content
     const alasData = !{JSON.stringify(alasEmergencia)};
 
     document.addEventListener('DOMContentLoaded', () => {
-      const alaSelect = document.getElementById('ala');
       const habitacionSelect = document.getElementById('habitacion');
       const camaSelect = document.getElementById('cama');
 
-      alaSelect.addEventListener('change', () => {
-        const alaId = parseInt(alaSelect.value);
-        habitacionSelect.innerHTML = '<option value="">-- Seleccionar ala primero --</option>';
-        camaSelect.innerHTML = '<option value="">-- Seleccionar habitación primero --</option>';
+      const alaEmergencia = Array.isArray(alasData) && alasData.length > 0
+        ? alasData[0]
+        : null;
 
-        const ala = alasData.find(a => a.id === alaId);
-        if (!ala) return;
-
-        if (ala.habitaciones.length === 0) {
+      function poblarHabitaciones() {
+        habitacionSelect.innerHTML = ''; 
+        if (!alaEmergencia) {
+          habitacionSelect.innerHTML = '<option value="">(Ala no disponible)</option>';
+          return;
+        }
+        const habitaciones = alaEmergencia.habitaciones || [];
+        if (habitaciones.length === 0) {
           habitacionSelect.innerHTML = '<option value="">(Sin habitaciones)</option>';
           return;
         }
-
+        // Opción por defecto
         habitacionSelect.innerHTML = '<option value="">-- Seleccione una habitación --</option>';
-        ala.habitaciones.forEach(hab => {
+        habitaciones.forEach(hab => {
           habitacionSelect.innerHTML += `<option value="${hab.id}">N° ${hab.numero}</option>`;
         });
-      });
+      }
 
-      habitacionSelect.addEventListener('change', () => {
-        const alaId = parseInt(alaSelect.value);
-        const habitacionId = parseInt(habitacionSelect.value);
-        camaSelect.innerHTML = '<option value="">-- Seleccionar habitación primero --</option>';
+      function poblarCamasPorHabitacion(habitacionId) {
+        camaSelect.innerHTML = '';
+        if (!alaEmergencia) {
+          camaSelect.innerHTML = '<option value="">(Ala no disponible)</option>';
+          return;
+        }
 
-        const ala = alasData.find(a => a.id === alaId);
-        if (!ala) return;
-
-        const habitacion = ala.habitaciones.find(h => h.id === habitacionId);
+        const habitaciones = alaEmergencia.habitaciones || [];
+        const habitacion = habitaciones.find(h => h.id === habitacionId);
         if (!habitacion || !habitacion.camas || habitacion.camas.length === 0) {
           camaSelect.innerHTML = '<option value="">(Sin camas disponibles)</option>';
           return;
@@ -109,5 +110,16 @@ block content
         habitacion.camas.forEach(cama => {
           camaSelect.innerHTML += `<option value="${cama.id}">Cama ${cama.numero}</option>`;
         });
+      }
+
+      poblarHabitaciones();
+
+      habitacionSelect.addEventListener('change', () => {
+        const habitacionId = parseInt(habitacionSelect.value);
+        if (isNaN(habitacionId)) {
+          camaSelect.innerHTML = '<option value="">-- Seleccionar habitación primero --</option>';
+          return;
+        }
+        poblarCamasPorHabitacion(habitacionId);
       });
     });
