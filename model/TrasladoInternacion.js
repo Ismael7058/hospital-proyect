@@ -15,7 +15,7 @@ TrasladoInternacion.init(
     },
     idAdmision: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'admision',
         key: 'id'
@@ -23,7 +23,7 @@ TrasladoInternacion.init(
     },
     idAdmisionProvisional:{
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'admisionProv',
         key: 'id'

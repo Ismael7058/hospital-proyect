@@ -35,6 +35,14 @@ AdmisionProv.init(
       type: DataTypes.STRING,
       allowNull: false
     },
+    fechaIngreso: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    fechaEgreso: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
   }, {
   sequelize,
   modelName: "AdmisionProv",

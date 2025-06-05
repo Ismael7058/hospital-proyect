@@ -43,13 +43,26 @@ Admision.belongsTo(Paciente, { foreignKey: 'idPaciente' });
 Admision.hasMany(TrasladoInternacion, { foreignKey: 'idAdmision' });
 TrasladoInternacion.belongsTo(Admision, { foreignKey: 'idAdmision' });
 
-// Admision 1:N TrasladoInternacion
-AdmisionProv.hasMany(TrasladoInternacion, { foreignKey: 'admisionProv' });
-TrasladoInternacion.belongsTo(AdmisionProv, { foreignKey: 'admisionProv' });
+// AdmisionProv 1:N TrasladoInternacion
+TrasladoInternacion.belongsTo(AdmisionProv, {
+  foreignKey: 'idAdmisionProvisional',
+  as: 'admisionProvisional'
+});
+AdmisionProv.hasMany(TrasladoInternacion, {
+  foreignKey: 'idAdmisionProvisional',
+  as: 'traslados'
+});
+
 
 // Cama 1:N TrasladoInternacion
-Cama.hasMany(TrasladoInternacion, { foreignKey: 'idCama' });
-TrasladoInternacion.belongsTo(Cama, { foreignKey: 'idCama' });
+Cama.hasMany(TrasladoInternacion, { 
+  foreignKey: 'idCama', 
+  as: 'trasladosInternacion' 
+});
+TrasladoInternacion.belongsTo(Cama, { 
+  foreignKey: 'idCama', 
+  as: 'cama' 
+});
 
 // Habitacion 1:N Cama
 Habitacion.hasMany(Cama, { foreignKey: 'idHabitacion', as: "camas"});
