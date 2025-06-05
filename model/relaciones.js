@@ -7,6 +7,7 @@ const TrasladoInternacion = require('./TrasladoInternacion');
 const Cama = require('./Cama');
 const Habitacion = require('./Habitacion');
 const Ala = require('./Ala');
+const AdmisionProv = require('./AdmisionProv');
 
 // Nacionalidad 1:N Paciente
 Nacionalidad.hasMany(Paciente, { foreignKey: 'idNacionalidad', as: 'pacientes' });
@@ -41,6 +42,10 @@ Admision.belongsTo(Paciente, { foreignKey: 'idPaciente' });
 // Admision 1:N TrasladoInternacion
 Admision.hasMany(TrasladoInternacion, { foreignKey: 'idAdmision' });
 TrasladoInternacion.belongsTo(Admision, { foreignKey: 'idAdmision' });
+
+// Admision 1:N TrasladoInternacion
+AdmisionProv.hasMany(TrasladoInternacion, { foreignKey: 'admisionProv' });
+TrasladoInternacion.belongsTo(AdmisionProv, { foreignKey: 'admisionProv' });
 
 // Cama 1:N TrasladoInternacion
 Cama.hasMany(TrasladoInternacion, { foreignKey: 'idCama' });

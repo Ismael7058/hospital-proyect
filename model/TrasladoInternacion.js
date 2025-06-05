@@ -21,6 +21,14 @@ TrasladoInternacion.init(
         key: 'id'
       }
     },
+    idAdmisionProvisional:{
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'admisionProv',
+        key: 'id'
+      }
+    },
     idCama: {
       type: DataTypes.INTEGER,
       allowNull: false,
