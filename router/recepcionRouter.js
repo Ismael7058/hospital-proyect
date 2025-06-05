@@ -30,7 +30,8 @@ router.get('/buscar/:id/admitido', recepcionController.admicionVista)
 router.get('/admitir', recepcionController.formularioAdmitir)
 router.post('/admitir', recepcionController.crearAdmision)
 
-
+router.get('/emergencia', recepcionController.formularioEmergencia);
+router.post('/emergencia', recepcionController.crearAdmisionEmergencia);
 
 module.exports = router;
 

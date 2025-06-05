@@ -569,7 +569,50 @@ async function formularioEmergencia(req, res) {
   }
 }
 
+async function crearAdmisionEmergencia(req, res) {
+  const t = await sequelize.transaction();
 
+  try {
+    const { nombre, apellido, genero, habitacion, cama, diagnosticoInicial } = req.body;
+
+    const nuevaAdmisionProv = await AdmisionProv.create(
+      {
+        nombre: nombre || "Desconocido",
+        apellido: apellido || "Desconocido",
+        generoPaciente: genero,
+        fechaIngreso: new Date(req.body.fechaVigencia),
+        motivo: diagnosticoInicial
+      },
+      { transaction: t }
+    );
+
+    const nuevoTraslado = await TrasladoInternacion.create(
+      {
+        idAdmisionProvisional: nuevaAdmisionProv.id,
+        idCama: cama,
+        fechaInicio: new Date(),
+        fechaFin: null
+      },
+      { transaction: t }
+    );
+
+    await Cama.update(
+      { estado: false },
+      {
+        where: { id: cama },
+        transaction: t
+      }
+    );
+
+    await t.commit();
+
+    return res.redirect(`/recepcion/emergencia`);
+  } catch (error) {
+    await t.rollback();
+    console.error("Error al crear admisión de emergencia:", error);
+    return res.status(500).send("Error interno al crear admisión de emergencia");
+  }
+}
 
 
 
@@ -588,4 +631,5 @@ module.exports = {
   crearAdmision,
   admicionVista,
   formularioEmergencia,
+  crearAdmisionEmergencia
 };
