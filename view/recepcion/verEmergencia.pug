@@ -1,0 +1,46 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+
+  section.row.h-100.section
+    include aside
+
+    main.col-10.main-bg-img
+      .contenedor.d-flex.flex-column.align-items-center
+        h2.mt-4.mb-4.text-center Detalle de Admisión de Emergencia
+
+        .col-6
+          .card.shadow.p-4.d-flex.align-items-center
+            h4.mb-3 Datos del Paciente
+            .card-body
+              dl.row
+                dt.col-sm-4 DNI:
+                dd.col-sm-8= adm.dni && adm.dni ? adm.dni : "Desconocido" 
+
+                dt.col-sm-4 Nombre:
+                dd.col-sm-8= adm.nombre
+
+                dt.col-sm-4 Apellido:
+                dd.col-sm-8= adm.apellido
+
+              if adm.traslados && adm.traslados.length > 0
+                h4.mt-4.mb-3 Ubicacion
+                table.table.table-bordered
+                  thead.table-light
+                    tr
+                      th Fecha de Ingreso
+                      th Cama
+                      th Habitación
+                      th Ala
+                  tbody
+                    each traslado in adm.traslados.sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio))
+                      tr
+                        td= traslado.fechaInicio ? traslado.fechaInicio.toLocaleDateString('es-AR') : '-'
+                        td= traslado.cama && traslado.cama.numero ? traslado.cama.numero : '-'
+                        td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.numero ? traslado.cama.habitacion.numero : '-'
+                        td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.ala && traslado.cama.habitacion.ala.nombre ? traslado.cama.habitacion.ala.nombre : '-'
+              else
+                p.mt-3.text-danger No hay traslados registrados para esta admisión.
+
+            a.btn.btn-secondary.col-2(href="./") Volver

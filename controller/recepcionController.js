@@ -606,7 +606,7 @@ async function crearAdmisionEmergencia(req, res) {
 
     await t.commit();
 
-    return res.redirect(`/recepcion/emergencia`);
+    return res.redirect(`/recepcion/emergencia/${nuevaAdmisionProv.id}`);
   } catch (error) {
     await t.rollback();
     console.error("Error al crear admisión de emergencia:", error);
@@ -657,6 +657,48 @@ async function listaEmergencia(req, res) {
   }
 }
 
+async function verEmergencia(req, res) {
+  const { id } = req.params;
+
+  try {
+    const adm = await AdmisionProv.findByPk(id, {
+      include: [
+        {
+          model: TrasladoInternacion,
+          as: 'traslados',
+          include: [
+            {
+              model: Cama,
+              as: 'cama',
+              include: [
+                {
+                  model: Habitacion,
+                  as: 'habitacion',
+                  include: [
+                    {
+                      model: Ala,
+                      as: 'ala'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!adm) {
+      return res.status(404).send('Admisión no encontrada');
+    }
+
+    res.render('recepcion/verEmergencia', { adm });
+  } catch (error) {
+    console.error("Error al buscar la admisión:", error);
+    res.status(500).send("Error interno al cargar el detalle de emergencia.");
+  }
+}
+
 
 module.exports = {
   formularioRegistro,
@@ -674,5 +716,6 @@ module.exports = {
   admicionVista,
   formularioEmergencia,
   crearAdmisionEmergencia,
-  listaEmergencia
+  listaEmergencia,
+  verEmergencia
 };
