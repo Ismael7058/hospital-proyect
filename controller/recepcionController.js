@@ -614,6 +614,48 @@ async function crearAdmisionEmergencia(req, res) {
   }
 }
 
+async function listaEmergencia(req, res) {
+  try {
+    const admisiones = await AdmisionProv.findAll({
+      include: [
+        {
+          model: TrasladoInternacion,
+          as: 'traslados',
+          required: true,
+          include: [
+            {
+              model: Cama,
+              as: 'cama',
+              attributes: ['numero'],
+              include: [
+                {
+                  model: Habitacion,
+                  as: 'habitacion',
+                  attributes: ['numero'],
+                  include: [
+                    {
+                      model: Ala,
+                      as: 'ala',
+                      attributes: ['nombre']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      order: [[{ model: TrasladoInternacion, as: 'traslados' }, 'fechaInicio', 'DESC']]
+
+    });
+
+
+    res.render('recepcion/listaEmergencia', { admisiones });
+  } catch (error) {
+    console.error("Error al obtener la lista de emergencias:", error);
+    res.status(500).send("Error interno al obtener la lista de emergencias.");
+  }
+}
 
 
 module.exports = {
@@ -631,5 +673,6 @@ module.exports = {
   crearAdmision,
   admicionVista,
   formularioEmergencia,
-  crearAdmisionEmergencia
+  crearAdmisionEmergencia,
+  listaEmergencia
 };

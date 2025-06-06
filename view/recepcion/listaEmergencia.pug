@@ -1,0 +1,41 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+  section.row.h-100.section
+    include aside
+    main.col-10.main-bg-img
+      .contenedor.d-flex.flex-column.align-items-center
+        h2.mb-4.text-center.mt-4 Lista de Admisiones de Emergencia
+
+        .col-10.mt-2
+          .table-responsive(style="max-height: 35rem; overflow-y: auto;")
+            table.table.table-hover.table-bordered
+              thead.table-dark
+                tr
+                  th(scope="col") ID
+                  th(scope="col") Nombre
+                  th(scope="col") Apellido
+                  th(scope="col") Fecha Ingreso
+                  th(scope="col") Cama
+                  th(scope="col") Habitación
+                  th(scope="col") Ala
+                  th(scope="col") Acciones
+              if admisiones.length > 0
+                tbody
+                  each adm in admisiones
+                    each traslado in adm.traslados
+                      tr
+                        td= adm.id
+                        td= adm.nombre
+                        td= adm.apellido
+                        td= traslado.fechaInicio ? traslado.fechaInicio.toLocaleDateString('es-AR') : '-'
+                        td= traslado.cama && traslado.cama.numero ? traslado.cama.numero : '-'
+                        td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.numero ? traslado.cama.habitacion.numero : '-'
+                        td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.ala && traslado.cama.habitacion.ala.nombre ? traslado.cama.habitacion.ala.nombre : '-'
+                        td
+                          a.btn.btn-sm.btn-outline-secondary(href=`/recepcion/emergencia/${adm.id}`) Ver
+              else
+                tbody
+                  tr
+                    td(colspan="8").text-center No hay admisiones de emergencia registradas.

@@ -33,5 +33,7 @@ router.post('/admitir', recepcionController.crearAdmision)
 router.get('/emergencia', recepcionController.formularioEmergencia);
 router.post('/emergencia', recepcionController.crearAdmisionEmergencia);
 
+router.get('/listEmergencia', recepcionController.listaEmergencia)
+
 module.exports = router;
 
