@@ -181,10 +181,11 @@ async function formularioSeguro(req, res) {
         }
       ]
     });
+
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
     const seguroMedico = await SeguroMedico.findAll();
-    res.render("recepcion/seguro", { paciente, seguroMedico });
+    res.render("recepcion/seguro", { paciente, seguroMedico, errores:{} });
 
   } catch (error) {
     console.error("Error al obtener el paciente:", error.message, error.stack);
@@ -195,11 +196,11 @@ async function formularioSeguro(req, res) {
 async function crearSeguroPaciente(req, res) {
   const pacienteId = req.params.id;
   const seguroPacienteData = {
-    idSeguroMedico: req.body.seguroNuevo,              // select#seguroNuevo
+    idSeguroMedico: req.body.seguroNuevo,
     idPaciente: pacienteId,
-    numeroAfiliado: req.body.numeroAfiliadoNuevo,      // input#numeroAfiliadoNuevo
-    fechaVigencia: req.body.fechaVigenciaNuevo,        // input#fechaVigenciaNuevo
-    fechaFinalizacion: req.body.fechaFinalizacionNuevo // input#fechaFinalizacionNuevo
+    numeroAfiliado: req.body.numeroAfiliadoNuevo,
+    fechaVigencia: req.body.fechaVigenciaNuevo,
+    fechaFinalizacion: req.body.fechaFinalizacionNuevo
   };
 
   try {
@@ -221,12 +222,31 @@ async function crearSeguroPaciente(req, res) {
       ]);
 
       return res.status(400).render("recepcion/seguro", {
-        errores: { seguro: "Ya existe ese seguro médico para este paciente" },
+        errores: { seguro: "Ya existe un seguro medico con esa Obra Social pertenecien al Paciente" },
         paciente,
         seguroMedico
       });
     }
 
+    const errores = validarDatosSeguro({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar });
+    if (Object.keys(errores).length > 0){
+      const paciente = await Paciente.findByPk(id, {
+        include: [
+          {
+            model: SeguroPaciente,
+            include: [
+              {
+                model: SeguroMedico,
+                attributes: ['nombre']
+              }
+            ]
+          }
+        ]
+      });
+      if (!paciente) return res.status(404).send("Paciente no encontrado");
+      const seguroMedico = await SeguroMedico.findAll();
+      res.render("recepcion/seguro", { paciente, seguroMedico, errores });
+    }
     // Si no existe, lo creamos y redirigimos
     await SeguroPaciente.create(seguroPacienteData);
     res.redirect(`/recepcion/buscar/${pacienteId}/seguro`);
@@ -241,34 +261,74 @@ async function crearSeguroPaciente(req, res) {
 // Controlador para editar un SeguroPaciente existente
 async function editarSeguroPaciente(req, res) {
   const pacienteId = req.params.id;
-  const {
-    idSeguro,                     // hidden input#idSeguro
-    numeroAfiliadoEditar,         // input#numeroAfiliadoEditar
-    fechaVigenciaEditar,          // input#fechaVigenciaEditar
-    fechaFinalizacionEditar       // input#fechaFinalizacionEditar
-  } = req.body;
-  try {
-    // Buscamos el registro por PK
-    const seguroRegistro = await SeguroPaciente.findByPk(idSeguro);
+  const { idSeguro, numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar } = req.body;
 
+  try {
+    const seguroRegistro = await SeguroPaciente.findByPk(idSeguro);
     if (!seguroRegistro) {
       return res.status(404).send("No se encontró el seguro para actualizar.");
     }
+    const paciente = await Paciente.findByPk(idPaciente, {
+        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
+    });
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
 
-    // Actualizamos los campos
+    const errores = validarDatosSeguro({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar });
+    if (Object.keys(errores).length > 0){
+      paciente = await Paciente.findByPk(id, {
+        include: [
+          {
+            model: SeguroPaciente,
+            include: [
+              {
+                model: SeguroMedico,
+                attributes: ['nombre']
+              }
+            ]
+          }
+        ]
+      });
+
+      const seguroMedico = await SeguroMedico.findAll();
+      res.render("recepcion/seguro", { paciente, seguroMedico, errores });
+    }
     await seguroRegistro.update({
       numeroAfiliado: numeroAfiliadoEditar,
       fechaVigencia: fechaVigenciaEditar,
       fechaFinalizacion: fechaFinalizacionEditar
     });
 
-    // Redirigimos de vuelta a la gestión de seguros
     res.redirect(`/recepcion/buscar/${pacienteId}/seguro`);
-
   } catch (error) {
     console.error("Error al editar el seguro del paciente:", error);
     res.status(500).send("Error interno al editar el seguro del paciente.");
   }
+}
+
+function validarDatosSeguro({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar }) {
+  const errores = {};
+  // Validar número de afiliado: al menos 5 dígitos y sin letras
+  const regexNumeroAfiliado = /^\d{5,}$/;
+  if (!regexNumeroAfiliado.test(numeroAfiliadoEditar)) {
+    errores.numeroAfiliado = "Número de afiliado debe tener al menos 5 dígitos y no contener letras.";
+  }
+
+  // Validar fecha vigencia: no mayor a hoy
+  const fechaVigencia = new Date(fechaVigenciaEditar);
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0); // ignorar hora para solo comparar fechas
+  if (fechaVigencia > hoy) {
+    errores.fechaVigencia = "Fecha de vigencia no puede ser mayor a la fecha actual." ;
+  }
+
+  // Validar fecha finalización: debe ser mayor que fecha vigencia
+  const fechaFinalizacion = new Date(fechaFinalizacionEditar);
+  if (fechaFinalizacion <= fechaVigencia) {
+    errores.fechaFinalizacion = "Fecha de finalización debe ser mayor que fecha de vigencia.";
+  }
+
+  // Si pasa todas las validaciones
+  return errores;
 }
 
 async function formularioEditarPaciente(req, res) {

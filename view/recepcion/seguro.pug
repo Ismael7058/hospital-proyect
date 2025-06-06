@@ -40,7 +40,7 @@ block content
                     )
                       option(value='nuevo') -- Seleccione --
                       each sp in paciente.SeguroPacientes
-                        option(value=sp.id)= sp.SeguroMedico.nombre
+                        option(value=sp.id)= sp.SeguroMedico ? sp.SeguroMedico.nombre : 'Sin nombre'
 
                   // id oculto para saber qué registro actualizar
                   input(type='hidden', id='idSeguro', name='idSeguro')
@@ -52,7 +52,8 @@ block content
                       name='numeroAfiliadoEditar',
                       required
                     )
-
+                    if errores.numeroAfiliado
+                      span.text-danger= errores.numeroAfiliado
                   .col-6.mb-3
                     label.form-label(for='fechaVigenciaEditar') Fecha de Vigencia
                     input.form-control#fechaVigenciaEditar(
@@ -60,6 +61,8 @@ block content
                       name='fechaVigenciaEditar',
                       required
                     )
+                    if errores.fechaVigencia
+                      span.text-danger= errores.fechaVigencia
 
                   .col-6.mb-3
                     label.form-label(for='fechaFinalizacionEditar') Fecha de Finalización
@@ -67,7 +70,8 @@ block content
                       type='date',
                       name='fechaFinalizacionEditar'
                     )
-
+                    if errores.fechaFinalizacion
+                      span.text-danger= errores.fechaFinalizacion
                   .d-flex.justify-content-center.mt-4
                     button.btn.btn-warning#botonGuardar(
                       type='submit',
@@ -94,7 +98,8 @@ block content
                     option(value='') -- Seleccione --
                     each seg in seguroMedico
                       option(value=seg.id)= seg.nombre
-
+                  if errores.seguro
+                    span.text-danger= errores.seguro
                 .col-12.mb-3
                   label.form-label(for='numeroAfiliadoNuevo') Número de Afiliado
                   input.form-control#numeroAfiliadoNuevo(
@@ -122,8 +127,6 @@ block content
                   button.btn.btn-success(type='submit') Agregar Seguro
                   a.btn.btn-outline-secondary.ms-3(href='../') Cancelar
 
-
-  //–– Scripts para alternar formularios y rellenar edición
   script.
     function mostrarFormulario(tipo) {
       const agregar = document.getElementById('formAgregar');
@@ -138,6 +141,7 @@ block content
     }
 
     function actualizarFormularioSeguro() {
+      // Los seguros aquí son los registros de SeguroPaciente
       const seguros = !{JSON.stringify(paciente.SeguroPacientes)};
       const select  = document.getElementById('selectorSeguro');
       const idSel   = select.value;
@@ -156,50 +160,10 @@ block content
         botonGuardar.disabled = true;
       } else {
         const obj = seguros.find(s => String(s.id) === idSel);
+        if (!obj) return;
         inputId.value        = obj.id;
-        numeroEdit.value     = obj.numeroAfiliado;
-        vigenciaEdit.value   = obj.fechaVigencia.substring(0,10);
-        finEdit.value        = obj.fechaFinalizacion
-                                  ? obj.fechaFinalizacion.substring(0,10)
-                                  : '';
-        botonGuardar.disabled = false;
-      }
-    }
-  script.
-    function mostrarFormulario(tipo) {
-      const agregar = document.getElementById('formAgregar');
-      const editar  = document.getElementById('formEditar');
-      if (tipo === 'agregar') {
-        agregar.style.display = 'block';
-        editar.style.display  = 'none';
-      } else {
-        agregar.style.display = 'none';
-        editar.style.display  = 'block';
-      }
-    }
-
-    function actualizarFormularioSeguro() {
-      const seguros = !{JSON.stringify(paciente.SeguroPacientes)};
-      const select  = document.getElementById('selectorSeguro');
-      const idSel   = select.value;
-
-      const inputId      = document.getElementById('idSeguro');
-      const numeroEdit   = document.getElementById('numeroAfiliadoEditar');
-      const vigenciaEdit = document.getElementById('fechaVigenciaEditar');
-      const finEdit      = document.getElementById('fechaFinalizacionEditar');
-      const botonGuardar = document.getElementById('botonGuardar');
-
-      if (idSel === 'nuevo') {
-        inputId.value        = '';
-        numeroEdit.value     = '';
-        vigenciaEdit.value   = '';
-        finEdit.value        = '';
-        botonGuardar.disabled = true;
-      } else {
-        const obj = seguros.find(s => String(s.id) === idSel);
-        inputId.value        = obj.id;
-        numeroEdit.value     = obj.numeroAfiliado;
-        vigenciaEdit.value   = obj.fechaVigencia.substring(0,10);
+        numeroEdit.value     = obj.numeroAfiliado || '';
+        vigenciaEdit.value   = obj.fechaVigencia ? obj.fechaVigencia.substring(0,10) : '';
         finEdit.value        = obj.fechaFinalizacion
                                   ? obj.fechaFinalizacion.substring(0,10)
                                   : '';
@@ -213,4 +177,3 @@ block content
         mostrarFormulario('agregar');
       }
     });
-
