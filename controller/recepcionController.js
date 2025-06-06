@@ -280,7 +280,7 @@ async function formularioEditarPaciente(req, res) {
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
     const nacionalidades = await Nacionalidad.findAll();
-    res.render("recepcion/editar", { paciente, nacionalidades });
+    res.render("recepcion/editar", { paciente, nacionalidades ,errores:{}});
   } catch (error) {
     console.error("Error al obtener el paciente:", error.message, error.stack);
     res.status(500).send("Error interno del servidor");
@@ -291,19 +291,30 @@ async function actualizarPaciente(req, res) {
   const idPaciente = req.params.id;
 
   const datosActualizados = {
-    dni: req.body.dni,
-    nombre: req.body.nombre,
-    apellido: req.body.apellido,
+    nombre: req.body.nombre?.trim(),
+    apellido: req.body.apellido?.trim(),
     genero: req.body.genero,
     fechaNacimiento: req.body.fechaNacimiento,
     idNacionalidad: req.body.nacionalidad,
-    domicilio: req.body.domicilio,
-    email: req.body.email,
-    telefono: req.body.telefono
+    domicilio: req.body.domicilio?.trim(),
+    email: req.body.email?.trim(),
+    telefono: req.body.telefono?.trim()
   };
 
+  
   try {
+    const nacionalidad = await Nacionalidad.findByPk(id);
+    const errores = controlActualizaPaciente(datosActualizados,nacionalidad);
+    if (Object.keys(errores).length > 0) {
+      const paciente = await Paciente.findByPk(idPaciente, {
+        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
+      });
 
+      if (!paciente) return res.status(404).send("Paciente no encontrado");
+
+      const nacionalidades = await Nacionalidad.findAll();
+      return res.status(400).render("recepcion/editar", { errores, paciente, nacionalidades });
+    }
 
     const actualizado = await Paciente.update(datosActualizados, {
       where: { id: idPaciente }
@@ -318,6 +329,62 @@ async function actualizarPaciente(req, res) {
     console.error("Error al actualizar paciente:", error);
     res.status(500).send("Error al actualizar los datos del paciente.");
   }
+}
+
+async function controlActualizaPaciente(datos, existeNacionalidad) {
+  const errores = {};
+
+  if (!datos.nombre || datos.nombre.trim() === '') {
+    errores.nombre = 'El campo Nombre es obligatorio';
+  } else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{3,}$/.test(datos.nombre.trim())) {
+    errores.nombre = 'El Nombre debe tener al menos 3 letras y no contener números';
+  }
+
+  if (!datos.apellido || datos.apellido.trim() === '') {
+    errores.apellido = 'El campo Apellido es obligatorio';
+  } else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{3,}$/.test(datos.apellido.trim())) {
+    errores.apellido = 'El Apellido debe tener al menos 3 letras y no contener números';
+  }
+
+  if (!datos.genero || !['Masculino', 'Femenino'].includes(datos.genero)) {
+    errores.genero = 'El Género debe ser Masculino o Femenino';
+  }
+
+  if (!datos.fechaNacimiento) {
+    errores.fechaNacimiento = 'La Fecha de Nacimiento es obligatoria';
+  } else {
+    const fecha = new Date(datos.fechaNacimiento);
+    const hoy = new Date();
+    if (isNaN(fecha.getTime()) || fecha > hoy) {
+      errores.fechaNacimiento = 'La Fecha de Nacimiento debe ser válida y no mayor a hoy';
+    }
+  }
+
+  if (!datos.idNacionalidad) {
+    errores.idNacionalidad = 'La Nacionalidad es obligatoria';
+  } else {
+    const existe = await existeNacionalidad(datos.idNacionalidad);
+    if (!existe) {
+      errores.idNacionalidad = 'La Nacionalidad seleccionada no existe';
+    }
+  }
+
+  if (!datos.domicilio || datos.domicilio.trim().length < 10) {
+    errores.domicilio = 'El Domicilio debe tener al menos 10 caracteres';
+  }
+
+  if (!datos.email) {
+    errores.email = 'El Email es obligatorio';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
+    errores.email = 'El formato del Email no es válido';
+  }
+
+  if (!datos.telefono) {
+    errores.telefono = 'El Teléfono es obligatorio';
+  } else if (!/^\d{10,}$/.test(datos.telefono)) {
+    errores.telefono = 'El Teléfono debe contener solo números y tener al menos 10 dígitos';
+  }
+  return errores;
 }
 
 
