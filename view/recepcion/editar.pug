@@ -13,49 +13,56 @@ block content
           .border.p-3.mb-4.seccion-form.col-7.rounded
             legend.fw-bold.mb-4 Datos del Paciente
             .row 
-              .col-md-4.mb-3
+              .col-md-4.mb-2
                 label.form-label(for="dni") DNI
-                input.form-control(type="number", name="dni", value=paciente.dni, required)
-
-              .col-md-4.mb-3
+                input.form-control(type="number", name="dni", value=paciente.dni, readonly, required)
+              .col-md-4.mb-2
                 label.form-label(for="nombre") Nombre
                 input.form-control(type="text", name="nombre", value=paciente.nombre, required)
-
-              .col-md-4.mb-3
+                if errores.nombre
+                  span.text-danger= errores.nombre
+              .col-md-4.mb-2
                 label.form-label(for="apellido") Apellido
                 input.form-control(type="text", name="apellido", value=paciente.apellido, required)
-
-              .col-md-4.mb-3
+                if errores.apellido 
+                  span.text-danger= errores.apellido
+              .col-md-4.mb-2
                 label.form-label(for="fechaNacimiento") Fecha de Nacimiento
                 input.form-control(type="date", name="fechaNacimiento", value=paciente.fechaNacimiento, required)
-
-              .col-md-4.mb-3
+                if errores.fechaNacimiento 
+                  span.text-danger= errores.fechaNacimiento
+              .col-md-4.mb-2
                 label.form-label(for="genero") Sexo
                 select.form-select(name="genero", required)
                   option(value="", disabled)= "-- Seleccione --"
-                  option(value="M", selected=paciente.genero == 'M') Masculino
-                  option(value="F", selected=paciente.genero == 'F') Femenino
-
-              .col-md-4.mb-3
+                  option(value="Masculino", selected=paciente.genero == 'M') Masculino
+                  option(value="Femenino", selected=paciente.genero == 'F') Femenino
+                if errores.genero 
+                  span.text-danger= errores.genero
+              .col-md-4.mb-2
                 label.form-label(for="nacionalidad") Nacionalidad
                 select.form-select(name="nacionalidad", required)
                   option(value=paciente.idNacionalidad selected disabled)= paciente.nacionalidad.nombre
                   each n in nacionalidades
                     if n.id != paciente.idNacionalidad
                       option(value=n.id)= n.nombre
-
-              .col-md-12.mb-3
+                if errores.idNacionalidad 
+                  span.text-danger= errores.idNacionalidad
+              .col-md-12.mb-2
                 label.form-label(for="domicilio") Domicilio
                 input.form-control(type="text", name="domicilio", value=paciente.domicilio, required)
-
-              .col-md-6.mb-3
+                if errores.domicilio 
+                  span.text-danger= errores.domicilio
+              .col-md-6.mb-2
                 label.form-label(for="email") Email
                 input.form-control(type="email", name="email", value=paciente.email, required)
-
-              .col-md-6.mb-3
+                if errores.email 
+                  span.text-danger= errores.email
+              .col-md-6.mb-2
                 label.form-label(for="telefono") Teléfono
                 input.form-control(type="number", name="telefono", value=paciente.telefono, required)
-
+                if errores.telefono 
+                  span.text-danger= errores.telefono
           .text-center.mt-4
             button.btn.btn-primary.fixed-submit(type="submit") Actualizar Paciente
             a.btn.btn-outline-secondary.ms-3(href='../') Cancelar
