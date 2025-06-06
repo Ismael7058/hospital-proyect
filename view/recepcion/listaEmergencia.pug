@@ -14,6 +14,7 @@ block content
               thead.table-dark
                 tr
                   th(scope="col") ID
+                  th(scope="col") DNI
                   th(scope="col") Nombre
                   th(scope="col") Apellido
                   th(scope="col") Fecha Ingreso
@@ -27,6 +28,7 @@ block content
                     each traslado in adm.traslados
                       tr
                         td= adm.id
+                        td= adm.dni && adm.dni ? adm.dni : "Desconocido"
                         td= adm.nombre
                         td= adm.apellido
                         td= traslado.fechaInicio ? traslado.fechaInicio.toLocaleDateString('es-AR') : '-'
@@ -34,7 +36,7 @@ block content
                         td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.numero ? traslado.cama.habitacion.numero : '-'
                         td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.ala && traslado.cama.habitacion.ala.nombre ? traslado.cama.habitacion.ala.nombre : '-'
                         td
-                          a.btn.btn-sm.btn-outline-secondary(href=`/recepcion/emergencia/${adm.id}`) Ver
+                          a.btn.btn-sm.btn-outline-secondary(href=`/recepcion/listEmergencia/${adm.id}`) Ver
               else
                 tbody
                   tr

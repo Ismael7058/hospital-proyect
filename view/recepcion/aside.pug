@@ -17,6 +17,10 @@ aside.col-2.aside.bg-green-blue.p-0
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/buscar") Buscar Paciente
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/registrar") Registrar Paciente
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/admitir") Admitir
-      li.mt-3
-        a.option(href="/recepcion/emergencia")
-          span Emergencia
+      li.cont-option.mt-3
+        button.btn-list(onclick="toggleList('listTwo')")
+          img.icon(src="/img/paciente.png", alt="")
+          span  Gestión de Pacientes
+        ul.list#listTwo
+          li.list-elem: a.text-white.text-decoration-none(href="/recepcion/emergencia") Admision de Emergencia
+          li.list-elem: a.text-white.text-decoration-none(href="/recepcion/listEmergencia") Lista de Emergencia
