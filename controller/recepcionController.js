@@ -340,7 +340,8 @@ async function formularioEditarPaciente(req, res) {
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
     const nacionalidades = await Nacionalidad.findAll();
-    res.render("recepcion/editar", { paciente, nacionalidades ,errores:{}});
+    const fechaHoy = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    res.render("recepcion/editar", { paciente, nacionalidades ,errores:{}, fechaHoy});
   } catch (error) {
     console.error("Error al obtener el paciente:", error.message, error.stack);
     res.status(500).send("Error interno del servidor");
@@ -349,7 +350,7 @@ async function formularioEditarPaciente(req, res) {
 
 async function actualizarPaciente(req, res) {
   const idPaciente = req.params.id;
-
+  let idNacionalidad= req.body.nacionalidad;
   const datosActualizados = {
     nombre: req.body.nombre?.trim(),
     apellido: req.body.apellido?.trim(),
@@ -363,25 +364,40 @@ async function actualizarPaciente(req, res) {
 
   
   try {
-    const nacionalidad = await Nacionalidad.findByPk(id);
+    const paciente = await Paciente.findByPk(idPaciente, {
+        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
+    });
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
+
+    if (!req.body.nacionalidad){
+      idNacionalidad = paciente.nacionalidad.id;
+    }
+
+    const nacionalidad = await Nacionalidad.findByPk(idNacionalidad);
+
+    if (!nacionalidad) return res.status(404).send("Nacionalidad no encontrado");
+
     const errores = controlActualizaPaciente(datosActualizados,nacionalidad);
     if (Object.keys(errores).length > 0) {
-      const paciente = await Paciente.findByPk(idPaciente, {
-        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
-      });
-
-      if (!paciente) return res.status(404).send("Paciente no encontrado");
-
       const nacionalidades = await Nacionalidad.findAll();
       return res.status(400).render("recepcion/editar", { errores, paciente, nacionalidades });
     }
 
-    const actualizado = await Paciente.update(datosActualizados, {
+    const actualizado = await Paciente.update({
+      nombre: datosActualizados.nombre,
+      apellido: datosActualizados.apellido,
+      genero: datosActualizados.genero,
+      fechaNacimiento: datosActualizados.fechaNacimiento,
+      idNacionalidad: datosActualizados.idNacionalidad,
+      domicilio: datosActualizados.domicilio,
+      email: datosActualizados.email,
+      telefono: datosActualizados.telefono,
+    }, {
       where: { id: idPaciente }
     });
 
     if (actualizado[0] === 0) {
-      return res.status(404).send("Paciente no encontrado.");
+      return res.status(404).send("Paciente no encontrado o sin cambios");
     }
 
     res.redirect(`/recepcion/buscar/${idPaciente}`);
@@ -391,7 +407,7 @@ async function actualizarPaciente(req, res) {
   }
 }
 
-async function controlActualizaPaciente(datos, existeNacionalidad) {
+function controlActualizaPaciente(datos) {
   const errores = {};
 
   if (!datos.nombre || datos.nombre.trim() === '') {
@@ -413,19 +429,14 @@ async function controlActualizaPaciente(datos, existeNacionalidad) {
   if (!datos.fechaNacimiento) {
     errores.fechaNacimiento = 'La Fecha de Nacimiento es obligatoria';
   } else {
-    const fecha = new Date(datos.fechaNacimiento);
-    const hoy = new Date();
-    if (isNaN(fecha.getTime()) || fecha > hoy) {
-      errores.fechaNacimiento = 'La Fecha de Nacimiento debe ser válida y no mayor a hoy';
-    }
-  }
+    const partesFecha = datos.fechaNacimiento.split('-'); // formato YYYY-MM-DD
+    const fecha = new Date(parseInt(partesFecha[0]), parseInt(partesFecha[1]) - 1, parseInt(partesFecha[2]));
 
-  if (!datos.idNacionalidad) {
-    errores.idNacionalidad = 'La Nacionalidad es obligatoria';
-  } else {
-    const existe = await existeNacionalidad(datos.idNacionalidad);
-    if (!existe) {
-      errores.idNacionalidad = 'La Nacionalidad seleccionada no existe';
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    if (isNaN(fecha.getTime()) || fecha > hoy) {
+      errores.fechaNacimiento = 'Fecha mayor a la de hoy';
     }
   }
 
@@ -488,7 +499,7 @@ async function formularioAdmitir(req, res) {
       }
       res.render("recepcion/admitir", { paciente, alas });
     }else {
-      res.render("recepcion/admitir", { alas });
+      res.render("recepcion/admitir", { paciente:{}, alas });
     }
 
   } catch (error) {
@@ -503,7 +514,6 @@ async function crearAdmision(req, res) {
 
   try {
     let paciente;
-
     if (idPacienteParam) {
       paciente = await Paciente.findByPk(idPacienteParam);
     } else if (dni) {
