@@ -52,17 +52,17 @@ block content
                       name='numeroAfiliadoEditar',
                       required
                     )
-                    if errores.numeroAfiliado
-                      span.text-danger= errores.numeroAfiliado
+                    if erroresUpdate.numeroAfiliadoEditar
+                      span.text-danger= erroresUpdate.numeroAfiliadoEditar
                   .col-6.mb-3
                     label.form-label(for='fechaVigenciaEditar') Fecha de Vigencia
                     input.form-control#fechaVigenciaEditar(
                       type='date',
-                      name='fechaVigenciaEditar',
+                      name='fechaVigenciaEditar', 
                       required
                     )
-                    if errores.fechaVigencia
-                      span.text-danger= errores.fechaVigencia
+                    if erroresUpdate.fechaVigenciaEditar
+                      span.text-danger= erroresUpdate.fechaVigenciaEditar
 
                   .col-6.mb-3
                     label.form-label(for='fechaFinalizacionEditar') Fecha de Finalización
@@ -70,8 +70,8 @@ block content
                       type='date',
                       name='fechaFinalizacionEditar'
                     )
-                    if errores.fechaFinalizacion
-                      span.text-danger= errores.fechaFinalizacion
+                    if erroresUpdate.fechaFinalizacionEditar
+                      span.text-danger= erroresUpdate.fechaFinalizacionEditar
                   .d-flex.justify-content-center.mt-4
                     button.btn.btn-warning#botonGuardar(
                       type='submit',
@@ -98,8 +98,8 @@ block content
                     option(value='') -- Seleccione --
                     each seg in seguroMedico
                       option(value=seg.id)= seg.nombre
-                  if errores.seguro
-                    span.text-danger= errores.seguro
+                  if erroresCreate.seguro
+                    span.text-danger= erroresCreate.seguro
                 .col-12.mb-3
                   label.form-label(for='numeroAfiliadoNuevo') Número de Afiliado
                   input.form-control#numeroAfiliadoNuevo(
@@ -107,7 +107,8 @@ block content
                     name='numeroAfiliadoNuevo',
                     required
                   )
-
+                  if erroresCreate.numeroAfiliadoNuevo
+                      span.text-danger= erroresCreate.numeroAfiliadoNuevo
                 .col-6.mb-3
                   label.form-label(for='fechaVigenciaNuevo') Fecha de Vigencia
                   input.form-control#fechaVigenciaNuevo(
@@ -115,13 +116,16 @@ block content
                     name='fechaVigenciaNuevo',
                     required
                   )
-
+                  if erroresCreate.fechaVigenciaNuevo
+                      span.text-danger= erroresCreate.fechaVigenciaNuevo
                 .col-6.mb-3
                   label.form-label(for='fechaFinalizacionNuevo') Fecha de Finalización
                   input.form-control#fechaFinalizacionNuevo(
                     type='date',
                     name='fechaFinalizacionNuevo'
                   )
+                  if erroresCreate.fechaFinalizacionNuevo
+                      span.text-danger= erroresCreate.fechaFinalizacionNuevo
 
                 .d-flex.justify-content-center.mt-4
                   button.btn.btn-success(type='submit') Agregar Seguro
@@ -164,9 +168,7 @@ block content
         inputId.value        = obj.id;
         numeroEdit.value     = obj.numeroAfiliado || '';
         vigenciaEdit.value   = obj.fechaVigencia ? obj.fechaVigencia.substring(0,10) : '';
-        finEdit.value        = obj.fechaFinalizacion
-                                  ? obj.fechaFinalizacion.substring(0,10)
-                                  : '';
+        finEdit.value        = obj.fechaFinalizacion ? obj.fechaFinalizacion.substring(0,10): '';
         botonGuardar.disabled = false;
       }
     }

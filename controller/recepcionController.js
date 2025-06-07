@@ -175,107 +175,145 @@ async function formularioSeguro(req, res) {
           include: [
             {
               model: SeguroMedico,
-              attributes: ['nombre']
+              attributes: ['id', 'nombre']
             }
           ]
         }
       ]
     });
+    if (!paciente) {
+      return res.status(404).send("Paciente no encontrado");
+    }
 
-    if (!paciente) return res.status(404).send("Paciente no encontrado");
+    const todosSeguros = await SeguroMedico.findAll({
+      attributes: ['id', 'nombre']
+    });
 
-    const seguroMedico = await SeguroMedico.findAll();
-    res.render("recepcion/seguro", { paciente, seguroMedico, errores:{} });
+    const segurosExistentesIds = new Set(
+      paciente.SeguroPacientes.map(sp => sp.SeguroMedico.id)
+    );
 
+    const segurosDisponibles = todosSeguros.filter(
+      sm => !segurosExistentesIds.has(sm.id)
+    );
+
+    res.render("recepcion/seguro", {
+      paciente,
+      seguroMedico: segurosDisponibles,
+      erroresUpdate: {}, erroresCreate: {}
+    });
   } catch (error) {
     console.error("Error al obtener el paciente:", error.message, error.stack);
     res.status(500).send("Error interno del servidor");
   }
 }
-// Controlador para crear un nuevo SeguroPaciente
+
+
 async function crearSeguroPaciente(req, res) {
   const pacienteId = req.params.id;
-  const seguroPacienteData = {
-    idSeguroMedico: req.body.seguroNuevo,
-    idPaciente: pacienteId,
-    numeroAfiliado: req.body.numeroAfiliadoNuevo,
-    fechaVigencia: req.body.fechaVigenciaNuevo,
-    fechaFinalizacion: req.body.fechaFinalizacionNuevo
-  };
-
+const { seguroNuevo, numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo } = req.body;
+  
   try {
-    // Verificar si ya existe ese seguro para el paciente
-    const seguroExistente = await SeguroPaciente.findOne({
-      where: {
-        idSeguroMedico: seguroPacienteData.idSeguroMedico,
-        idPaciente: pacienteId
-      }
+    const paciente = await Paciente.findByPk(pacienteId, {
+      include: [{
+        model: SeguroPaciente,
+        include: [{ model: SeguroMedico, attributes: ['id','nombre'] }]
+      }]
     });
+    if (!paciente) {
+      return res.status(404).send("Paciente no encontrado");
+    }
 
+    const listaSeguros = await SeguroMedico.findAll({ attributes: ['id','nombre'] });
+
+    const seguroExistente = paciente.SeguroPacientes
+      .some(sp => String(sp.idSeguroMedico) === String(seguroNuevo))
     if (seguroExistente) {
-      // Si ya existe, recargamos la vista con mensaje de error
-      const [paciente, seguroMedico] = await Promise.all([
-        Paciente.findByPk(pacienteId, {
-          include: { model: SeguroPaciente, include: SeguroMedico }
-        }),
-        SeguroMedico.findAll()
-      ]);
-
       return res.status(400).render("recepcion/seguro", {
-        errores: { seguro: "Ya existe un seguro medico con esa Obra Social pertenecien al Paciente" },
+        errores: { seguro: "Ya existe ese seguro para este paciente." },
         paciente,
-        seguroMedico
+        seguroMedico: listaSeguros, erroresCreate:{}, erroresUpdate: {}
       });
     }
 
-    const errores = validarDatosSeguro({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar });
-    if (Object.keys(errores).length > 0){
-      const paciente = await Paciente.findByPk(id, {
-        include: [
-          {
-            model: SeguroPaciente,
-            include: [
-              {
-                model: SeguroMedico,
-                attributes: ['nombre']
-              }
-            ]
-          }
-        ]
+    const erroresCreate = {};
+    validarDatosSeguro({ numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo}, erroresCreate);
+    if (Object.keys(erroresCreate).length > 0) {
+      return res.status(400).render("recepcion/seguro", {
+        erroresCreate,
+        paciente,
+        seguroMedico: listaSeguros, 
+        erroresUpdate:{}
       });
-      if (!paciente) return res.status(404).send("Paciente no encontrado");
-      const seguroMedico = await SeguroMedico.findAll();
-      res.render("recepcion/seguro", { paciente, seguroMedico, errores });
     }
-    // Si no existe, lo creamos y redirigimos
-    await SeguroPaciente.create(seguroPacienteData);
-    res.redirect(`/recepcion/buscar/${pacienteId}/seguro`);
 
-  } catch (error) {
+    await SeguroPaciente.create(
+      { 
+        idSeguroMedico: seguroNuevo,
+        idPaciente: pacienteId,
+        numeroAfiliado: numeroAfiliadoNuevo,
+        fechaVigencia: fechaVigenciaNuevo,
+        fechaFinalizacion: fechaFinalizacionNuevo
+      }
+    );
+    return res.redirect(`/recepcion/buscar/${pacienteId}/seguro`);
+  }
+  catch (error) {
     console.error("Error al crear el seguro del paciente:", error);
-    res.status(500).send("Error interno al crear el seguro del paciente.");
+    return res.status(500).send("Error interno al crear el seguro del paciente.");
   }
 }
 
+function validarDatosSeguro({ numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo }, erroresCreate = {}) {
+  if (!/^\d{5,}$/.test(numeroAfiliadoNuevo)) {
+    erroresCreate.numeroAfiliadoNuevo = "Número de afiliado debe tener al menos 5 dígitos y no contener letras.";
+  }
 
-// Controlador para editar un SeguroPaciente existente
+  if (fechaVigenciaNuevo) {
+    const [y, m, d] = fechaVigenciaNuevo.split('-').map(Number);
+    const fv = new Date(y, m - 1, d);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    if (isNaN(fv.getTime()) || fv > hoy) {
+      erroresCreate.fechaVigenciaNuevo = "La Fecha de Vigencia no puede ser mayor a hoy.";
+    }
+  }else {
+    erroresCreate.fechaVigenciaNuevo = "La Fecha de Vigencia es obligatoria.";
+  }
+
+  if (fechaFinalizacionNuevo) {
+    const [y2, m2, d2] = fechaFinalizacionNuevo.split('-').map(Number);
+    const ff = new Date(y2, m2 - 1, d2);
+    const [y1, m1, d1] = fechaVigenciaNuevo.split('-').map(Number);
+    const fv = new Date(y1, m1 - 1, d1);
+    if (isNaN(ff.getTime()) || ff <= fv) {
+      erroresCreate.fechaFinalizacionNuevo = "Fecha de finalización debe ser mayor que fecha de vigencia.";
+    }
+  } else {
+    erroresCreate.fechaFinalizacionNuevo = "La Fecha de Finalización es obligatoria.";
+  }
+  return erroresCreate;
+}
+
+
 async function editarSeguroPaciente(req, res) {
-  const pacienteId = req.params.id;
+  const idPaciente = req.params.id;
   const { idSeguro, numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar } = req.body;
-
   try {
     const seguroRegistro = await SeguroPaciente.findByPk(idSeguro);
     if (!seguroRegistro) {
       return res.status(404).send("No se encontró el seguro para actualizar.");
     }
-    const paciente = await Paciente.findByPk(idPaciente, {
+    let paciente = await Paciente.findByPk(idPaciente, {
         include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
     });
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
-    const errores = validarDatosSeguro({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar });
-    if (Object.keys(errores).length > 0){
-      paciente = await Paciente.findByPk(id, {
+    let erroresUpdate = {};
+    validarDatosSeguroDos({numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar}, erroresUpdate );
+    if (Object.keys(erroresUpdate).length > 0){
+      paciente = await Paciente.findByPk(idPaciente, {
         include: [
           {
             model: SeguroPaciente,
@@ -290,7 +328,7 @@ async function editarSeguroPaciente(req, res) {
       });
 
       const seguroMedico = await SeguroMedico.findAll();
-      res.render("recepcion/seguro", { paciente, seguroMedico, errores });
+      return res.render("recepcion/seguro", { paciente, seguroMedico, erroresUpdate, erroresCreate:{} });
     }
     await seguroRegistro.update({
       numeroAfiliado: numeroAfiliadoEditar,
@@ -298,38 +336,47 @@ async function editarSeguroPaciente(req, res) {
       fechaFinalizacion: fechaFinalizacionEditar
     });
 
-    res.redirect(`/recepcion/buscar/${pacienteId}/seguro`);
+    res.redirect(`/recepcion/buscar/${idPaciente}/seguro`);
   } catch (error) {
     console.error("Error al editar el seguro del paciente:", error);
     res.status(500).send("Error interno al editar el seguro del paciente.");
   }
 }
 
-function validarDatosSeguro({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar }) {
-  const errores = {};
-  // Validar número de afiliado: al menos 5 dígitos y sin letras
-  const regexNumeroAfiliado = /^\d{5,}$/;
-  if (!regexNumeroAfiliado.test(numeroAfiliadoEditar)) {
-    errores.numeroAfiliado = "Número de afiliado debe tener al menos 5 dígitos y no contener letras.";
+function validarDatosSeguroDos({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar }, erroresUpdate = {}) {
+  if (!/^\d{5,}$/.test(numeroAfiliadoEditar)) {
+    erroresUpdate.numeroAfiliadoEditar = "Número de afiliado debe tener al menos 5 dígitos y no contener letras.";
   }
 
-  // Validar fecha vigencia: no mayor a hoy
-  const fechaVigencia = new Date(fechaVigenciaEditar);
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0); // ignorar hora para solo comparar fechas
-  if (fechaVigencia > hoy) {
-    errores.fechaVigencia = "Fecha de vigencia no puede ser mayor a la fecha actual." ;
+  if (fechaVigenciaEditar) {
+    const [y, m, d] = fechaVigenciaEditar.split('-').map(Number);
+    const fv = new Date(y, m - 1, d);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    if (isNaN(fv.getTime()) || fv > hoy) {
+      erroresUpdate.fechaVigenciaEditar = "La Fecha de Vigencia no puede ser mayor a hoy.";
+    }
+  }else {
+    erroresUpdate.fechaVigenciaEditar = "La Fecha de Vigencia es obligatoria.";
   }
 
-  // Validar fecha finalización: debe ser mayor que fecha vigencia
-  const fechaFinalizacion = new Date(fechaFinalizacionEditar);
-  if (fechaFinalizacion <= fechaVigencia) {
-    errores.fechaFinalizacion = "Fecha de finalización debe ser mayor que fecha de vigencia.";
+  if (fechaFinalizacionEditar) {
+    const [y2, m2, d2] = fechaFinalizacionEditar.split('-').map(Number);
+    const ff = new Date(y2, m2 - 1, d2);
+    const [y1, m1, d1] = fechaVigenciaEditar.split('-').map(Number);
+    const fv = new Date(y1, m1 - 1, d1);
+
+    if (isNaN(ff.getTime()) || ff <= fv) {
+      erroresUpdate.fechaFinalizacionEditar = "La Fecha de Finalización debe ser posterior a la de Vigencia.";
+    }
+  }else {
+    erroresUpdate.fechaFinalizacionEditar = "La Fecha de Finalización es obligatoria.";
   }
 
-  // Si pasa todas las validaciones
-  return errores;
+  return erroresUpdate;
 }
+
 
 async function formularioEditarPaciente(req, res) {
   const id = req.params.id;
@@ -463,8 +510,6 @@ function controlActualizaPaciente(datos) {
 
 async function formularioAdmitir(req, res) {
   const idPaciente = req.params.id;
-
-
   try {
     const alas = await Ala.findAll({
       include: [{
@@ -856,3 +901,6 @@ module.exports = {
   listaEmergencia,
   verEmergencia
 };
+
+
+
