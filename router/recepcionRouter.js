@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const recepcionController = require('../controller/recepcionController');
-const Paciente = require('../model/Paciente');
-const Nacionalidad = require('../model/Nacionalidad');
 
 router.get('/', (req, res) => res.render('recepcion/home'));
 router.get('/registrar', recepcionController.formularioRegistro);
@@ -25,15 +23,16 @@ router.post('/buscar/:id/editar', recepcionController.actualizarPaciente);
 // Admitir paciente
 router.get('/buscar/:id/admitir', recepcionController.formularioAdmitir);
 router.post ('/buscar/:id/admitir', recepcionController.crearAdmision);
-router.get('/buscar/:id/admitido', recepcionController.admicionVista)
+router.get('/buscar/:id/admitido', recepcionController.admicionVista);
 
-router.get('/admitir', recepcionController.formularioAdmitir)
-router.post('/admitir', recepcionController.crearAdmision)
+router.get('/admitir', recepcionController.formularioAdmitir);
+router.post('/admitir', recepcionController.crearAdmision);
 
 router.get('/emergencia', recepcionController.formularioEmergencia);
 router.post('/emergencia', recepcionController.crearAdmisionEmergencia);
+router.get('/emergencia/:id', recepcionController.verEmergencia);
 
-router.get('/listEmergencia', recepcionController.listaEmergencia)
+router.get('/listEmergencia', recepcionController.listaEmergencia);
+router.get('/listEmergencia/:id', recepcionController.verEmergencia);
 
 module.exports = router;
-
