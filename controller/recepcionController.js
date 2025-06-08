@@ -126,7 +126,18 @@ async function datosPaciente(req, res) {
 async function buscarPaciente(req, res) {
   const dni = req.body.dni;
   try {
+    const errores = controlDni(dni);
+    if (Object.keys(errores).length > 0) {
+      const pacientes = await Paciente.findAll({
+        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
+      });
 
+      return res.render("recepcion/buscar", {
+        pacientes,
+        dniNoEncontrado: dni,
+        errores
+      });
+    }
     const paciente = await Paciente.findOne({
       where: { dni },
       include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
@@ -139,7 +150,8 @@ async function buscarPaciente(req, res) {
 
       return res.render("recepcion/buscar", {
         pacientes,
-        dniNoEncontrado: dni
+        dniNoEncontrado: dni,
+        errores
       });
     }
     res.redirect("buscar/" + paciente.id);
@@ -147,6 +159,14 @@ async function buscarPaciente(req, res) {
     console.error("Error al buscar el paciente:", error);
     res.status(500).send("Error al buscar el paciente.");
   }
+}
+
+function controlDni(dni){
+  const errores = {};
+  if (!/^\d{8,}$/.test(dni)) {
+    errores.dni = "DNI no valido";
+  };
+  return errores;
 }
 
 
@@ -157,7 +177,7 @@ async function buscarPacienteVista(req, res) {
     const pacientes = await Paciente.findAll({
       include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
     });
-    res.render("recepcion/buscar", { pacientes, mensaje: "" });
+    res.render("recepcion/buscar", { pacientes, mensaje: "" , errores:{}});
   } catch (error) {
     console.error("Error al obtener los pacientes:", error);
     res.status(500).send("Error al obtener los pacientes.");

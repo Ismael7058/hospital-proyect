@@ -9,27 +9,27 @@ block content
         // Modal para mensaje personalizado
 
         .row.col-10
-          .col-4.d-flex.align-items-center
-            form#formBuscarPorDNI.col-6(action="/recepcion/buscar" method="POST")
+          .col-4.d-flex.align-items-start.flex-column
+            form#formBuscarPorDNI.d-flex.align-items-center(action="/recepcion/buscar" method="POST")
               .d-flex.align-items-center
-                input#dniBuscar.form-control.rounded-0.rounded-start(type="text", name="dni", placeholder=dniNoEncontrado ? dniNoEncontrado : "Ingresar DNI", required)
+                input#dniBuscar.form-control.rounded-0.rounded-start(type="text", name="dni", value=dniNoEncontrado || "", placeholder="Ingresar DNI", required)
                 button#botonBuscar.btn.btn-primary.rounded-0.rounded-end.border-0(type="submit") Buscar
-
-            // 👉 Si hay mensaje, mostramos el aviso + botón de registrar
-            if dniNoEncontrado && dniNoEncontrado.length > 0
-              #mensajeDni.ms-3
-                a#btnRegistrar.btn.btn-success(href=`/recepcion/registrar?dni=${dniNoEncontrado}`) Registrar
-
+                
+              if errores && !errores.dni && dniNoEncontrado && dniNoEncontrado.length > 0
+                #mensajeDni.ms-3
+                  a#btnRegistrar.btn.btn-success(href=`/recepcion/registrar?dni=${dniNoEncontrado}`) Registrar
+              if errores && errores.dni
+                span#errorDNI.ms-1.text-danger= errores.dni
           .col-8.d-flex.justify-content-end
-            form#formBuscarPorDNI.col-12(action="/recepcion/buscar" method="POST")
-              .d-flex.row.justify-content-end
+            .col-12
+              .d-flex.justify-content-end.align-items-center
+                span.me-2 Filtrar por:
                 .col-10.d-flex.pe-0
                   input#inputNombre.form-control.me-2(type="text" placeholder="Nombre")
                   input#inputApellido.form-control(type="text" placeholder="Apellido")
-                .col-2
-                  button.btn.btn-primary(type="submitFiltro") Filtrar
+
         .col-10.mt-4
-          // Contenedor con altura fija y scroll
+          // Contenedsor con altura fija y scroll
           .table-responsive(style="max-height: 35rem; overflow-y: auto;")
             table.table.table-hover.table-bordered
               thead.table-dark
@@ -57,7 +57,6 @@ block content
                         a.btn.btn-sm.btn-outline-secondary(href='buscar/' + paciente.id) Ver
 
 
-  // 👉 Solo si el mensaje tiene contenido
   if dniNoEncontrado && dniNoEncontrado.length > 0
     script.
       console.log(dniNoEncontrado)
@@ -65,23 +64,30 @@ block content
 
       document.addEventListener('DOMContentLoaded', () => {
         const dniInput = document.getElementById('dniBuscar');
+        const nombreInput = document.getElementById('inputNombre');
+        const apellidoInput = document.getElementById('inputApellido');
         const mensaje = document.getElementById('mensajeDni');
+        const errorDNI = document.getElementById('errorDNI');
         const botonBuscar = document.getElementById('botonBuscar');
 
-        if (dniNoEncontrado && botonBuscar) {
-          botonBuscar.classList.remove('btn-primary');
-          botonBuscar.classList.add('btn-danger');
-        }
-
-        dniInput?.addEventListener('input', () => {
-          mensaje?.remove();
-
+        function limpiarErrores() {
+          document.getElementById('mensajeDni')?.remove();
+          document.getElementById('errorDNI')?.remove();
           if (botonBuscar?.classList.contains('btn-danger')) {
             botonBuscar.classList.remove('btn-danger');
             botonBuscar.classList.add('btn-primary');
           }
-          dniInput.placeholder = "Ingresar DNI";
+        }
+
+        dniInput?.addEventListener('input', () => {
+          limpiarErrores();
+          if (dniInput.value === dniNoEncontrado) {
+            dniInput.value = "";
+          }
         });
+
+        nombreInput?.addEventListener('input', limpiarErrores);
+        apellidoInput?.addEventListener('input', limpiarErrores);
       });
   script.
     document.addEventListener('DOMContentLoaded', () => {
@@ -113,10 +119,14 @@ block content
     });
   script.
     document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('formBuscarPorDNI');
-      form.addEventListener('submitFiltro', (e) => {
-        e.preventDefault(); // Cancela el envío del formulario
-      });
+      const botonFiltrar = document.getElementById('botonFiltrar');
+
+      if (botonFiltrar) {
+        botonFiltrar.addEventListener('click', () => {
+          document.getElementById('mensajeDni')?.remove();
+          document.getElementById('errorDNI')?.remove();
+        });
+      }
     });
 
 
