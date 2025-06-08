@@ -9,6 +9,8 @@ const Ala = require("./Ala");
 const Habitacion = require("./Habitacion");
 const Cama = require("./Cama");
 const TrasladoInternacion = require("./TrasladoInternacion");
+const AdmisionProv = require("./AdmisionProv");
+const SeguroPaciente = require("./SeguroPaciente");
 
 // Relaciones
 require("./relaciones");
@@ -18,10 +20,12 @@ module.exports = {
   sequelize,
   Nacionalidad,
   SeguroMedico,
+  SeguroPaciente,
   Paciente,
   Admision,
   Ala,
   Habitacion,
   Cama,
   TrasladoInternacion,
+  AdmisionProv
 };
