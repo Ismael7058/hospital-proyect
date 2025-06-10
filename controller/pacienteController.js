@@ -15,19 +15,41 @@ const validar = require('./validarDatos')
 const { Op } = require("sequelize");
 
 
-// Registrar Paciente Vista
 async function formularioRegistro(req, res) {
   const dni = req.query.dni || "";
+  const nacionalidades = await Nacionalidad.findAll({
+    attributes: ["id", "nombre"],
+  });
+
   try {
     let errores = {};
     let dniNoEncontrado = null;
+    let datos = {};
+
     if (dni) {
       errores = validar.controlDni(dni);
       if (Object.keys(errores).length === 0) {
         const paciente = await Paciente.findOne({ where: { dni } });
         if (paciente) {
           errores.existe = "Ya existe un paciente con ese DNI";
-          res.render("recepcion/registrar", { nacionalidades, errores, dni });
+
+          datos = {
+            nombre: req.query.nombre || "",
+            apellido: req.query.apellido || "",
+            fechaNacimiento: req.query.fechaNacimiento || "",
+            genero: req.query.genero || "",
+            nacionalidad: req.query.nacionalidad || "",
+            domicilio: req.query.domicilio || "",
+            email: req.query.email || "",
+            telefono: req.query.telefono || "",
+          };
+
+          return res.render("recepcion/registrar", {
+            nacionalidades,
+            errores,
+            dni,
+            datos
+          });
         } else {
           dniNoEncontrado = dni;
         }
@@ -35,22 +57,19 @@ async function formularioRegistro(req, res) {
         dniNoEncontrado = dni;
       }
     }
-    const nacionalidades = await Nacionalidad.findAll({
-      attributes: ["id", "nombre"],
+
+    res.render("recepcion/registrar", {
+      nacionalidades,
+      errores,
+      dni,
+      datos: {}
     });
-
-    res.render("recepcion/registrar", { nacionalidades, errores, dni });
   } catch (error) {
-
+    console.error(error);
+    res.status(500).send("Error interno del servidor");
   }
+}
 
-
-
-
-
-
-
-};
 
 async function crearPaciente(req, res) {
   const paciente = {
@@ -64,15 +83,19 @@ async function crearPaciente(req, res) {
     email: req.body.email,
     telefono: req.body.telefono
   };
-  const errores = validar.validarCamposPaciente(paciente);
-
-  if (Object.keys(errores).length > 0) {
-    const nacionalidades = await Nacionalidad.findAll({
-      attributes: ["id", "nombre"],
-    });
-    return res.status(400).render("recepcion/registrar", { errores, nacionalidades });
-  }
   try {
+    const errores = validar.validarCamposPaciente(paciente);
+    
+    if (Object.keys(errores).length > 0) {
+      const nacionalidades = await Nacionalidad.findAll({
+        attributes: ["id", "nombre"],
+      });
+      return res.status(400).render("recepcion/registrar", {
+        errores,
+        datos: paciente,
+        nacionalidades,
+      });
+    }
     const pacienteExiste = await Paciente.findOne({ where: { dni: paciente.dni } });
 
     if (pacienteExiste) {
@@ -80,8 +103,11 @@ async function crearPaciente(req, res) {
         attributes: ["id", "nombre"],
       });
       return res.status(400).render("recepcion/registrar", {
-        errores: { dni: "Ya existe un paciente con este DNI" },
-        nacionalidades
+        errores: { existe: "Ya existe un paciente con este DNI" },
+        datos: paciente,
+        dni: paciente.dni,
+        id: pacienteExiste.id,
+        nacionalidades,
       });
     }
     const newPaciente = await Paciente.create(paciente);
@@ -89,7 +115,14 @@ async function crearPaciente(req, res) {
   } catch (error) {
     console.error("Error al crear el paciente:", error);
     if (error.name === "SequelizeValidationError") {
-      return res.status(400).send("Error de validación en los datos del paciente.");
+      const nacionalidades = await Nacionalidad.findAll({
+        attributes: ["id", "nombre"],
+      });
+      return res.status(400).render("recepcion/registrar", {
+        errores: { existe: "Error de validación en la base de datos." },
+        datos: paciente,
+        nacionalidades,
+      });
     }
     res.status(500).send("Error al registrar el paciente.");
   }
@@ -119,8 +152,6 @@ async function buscarPaciente(req, res) {
         dniNoEncontrado = dni;
       }
     }
-
-    // Si no hay dni o hubo error, mostrar todos
     const pacientes = await Paciente.findAll({
       include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
     });

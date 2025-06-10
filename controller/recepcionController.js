@@ -804,9 +804,6 @@ async function verEmergencia(req, res) {
 
 
 module.exports = {
-  formularioRegistro,
-  //crearPaciente,
-  datosPaciente,
   formularioSeguro,
   crearSeguroPaciente,
   editarSeguroPaciente,

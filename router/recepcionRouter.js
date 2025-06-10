@@ -4,7 +4,7 @@ const recepcionController = require('../controller/recepcionController');
 const pacienteController = require('../controller/pacienteController');
 
 router.get('/', (req, res) => res.render('recepcion/home'));
-router.get('/registrar', recepcionController.formularioRegistro);
+router.get('/registrar', pacienteController.formularioRegistro);
 router.post('/registrar', pacienteController.crearPaciente);
 
 
@@ -12,18 +12,18 @@ router.get('/buscar', pacienteController.buscarPaciente);
 router.get('/paciente/:id', pacienteController.datosPaciente);
 
 // Ver - agregar - editar seguros medicos del paciente
-router.get('/buscar/:id/seguro', recepcionController.formularioSeguro);
-router.post('/buscar/:id/seguro', recepcionController.crearSeguroPaciente);
-router.post('/buscar/:id/seguro/editar', recepcionController.editarSeguroPaciente);
+router.get('/paciente/:id/seguro', recepcionController.formularioSeguro);
+router.post('/paciente/:id/seguro', recepcionController.crearSeguroPaciente);
+router.post('/paciente/:id/seguro/editar', recepcionController.editarSeguroPaciente);
 
 // Editar datos del Paciente
-router.get('/buscar/:id/editar', recepcionController.formularioEditarPaciente);
-router.post('/buscar/:id/editar', recepcionController.actualizarPaciente);
+router.get('/paciente/:id/editar', recepcionController.formularioEditarPaciente);
+router.post('/paciente/:id/editar', recepcionController.actualizarPaciente);
 
 // Admitir paciente
-router.get('/buscar/:id/admitir', recepcionController.formularioAdmitir);
-router.post ('/buscar/:id/admitir', recepcionController.crearAdmision);
-router.get('/buscar/:id/admitido', recepcionController.admicionVista);
+router.get('/paciente/:id/admitir', recepcionController.formularioAdmitir);
+router.post ('/paciente/:id/admitir', recepcionController.crearAdmision);
+router.get('/paciente/:id/admitido', recepcionController.admicionVista);
 
 router.get('/admitir', recepcionController.formularioAdmitir);
 router.post('/admitir', recepcionController.crearAdmision);
