@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const recepcionController = require('../controller/recepcionController');
+const pacienteController = require('../controller/pacienteController');
 
 router.get('/', (req, res) => res.render('recepcion/home'));
 router.get('/registrar', recepcionController.formularioRegistro);
-router.post('/registrar', recepcionController.crearPaciente);
+router.post('/registrar', pacienteController.crearPaciente);
 
-router.get('/buscar', recepcionController.buscarPacienteVista);
-router.post('/buscar', recepcionController.buscarPaciente); 
+router.get('/buscar', pacienteController.buscarPaciente);
 
 router.get('/buscar/:id', recepcionController.datosPaciente);
 
