@@ -15,59 +15,6 @@ const {
 const { Op } = require("sequelize");
 
 
-// Registrar Paciente Vista
-async function formularioRegistro(req, res) {
-  const dni = req.query.dni || "";
-  const nacionalidades = await Nacionalidad.findAll({
-    attributes: ["id", "nombre"],
-  });
-  const errores = req.query.errores || {};
-
-
-  res.render("recepcion/registrar", { nacionalidades, errores, dni });
-
-};
-
-async function formularioRegistro(req, res) {
-  const dni = req.query.dni;
-  const nacionalidades = await Nacionalidad.findAll({
-    attributes: ["id", "nombre"],
-  });
-  const errores = req.query.errores || {};
-
-  const datosParaRender = { nacionalidades, errores };
-
-  if (dni && dni.trim().length > 0) {
-    datosParaRender.dni = dni.trim();
-  }
-
-  res.render("recepcion/registrar", datosParaRender);
-}
-
-
-
-
-async function datosPaciente(req, res) {
-  try {
-    const id = req.params.id;
-    const paciente = await Paciente.findByPk(id, {
-      include: [{
-        model: Nacionalidad,
-        as: 'nacionalidad',
-        attributes: ['id', 'nombre']
-      }]
-    });
-
-    if (!paciente) return res.status(404).send("Paciente no encontrado");
-
-    res.render("recepcion/paciente", { paciente });
-  } catch (error) {
-    console.error("Error al obtener el paciente:", error);
-    res.status(500).send("Error interno del servidor");
-  }
-}
-
-
 
 
 // Controlador

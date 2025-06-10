@@ -7,9 +7,9 @@ router.get('/', (req, res) => res.render('recepcion/home'));
 router.get('/registrar', recepcionController.formularioRegistro);
 router.post('/registrar', pacienteController.crearPaciente);
 
-router.get('/buscar', pacienteController.buscarPaciente);
 
-router.get('/buscar/:id', recepcionController.datosPaciente);
+router.get('/buscar', pacienteController.buscarPaciente);
+router.get('/paciente/:id', pacienteController.datosPaciente);
 
 // Ver - agregar - editar seguros medicos del paciente
 router.get('/buscar/:id/seguro', recepcionController.formularioSeguro);

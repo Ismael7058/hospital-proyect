@@ -13,6 +13,45 @@ const {
 } = require("../model");
 const validar = require('./validarDatos')
 const { Op } = require("sequelize");
+
+
+// Registrar Paciente Vista
+async function formularioRegistro(req, res) {
+  const dni = req.query.dni || "";
+  try {
+    let errores = {};
+    let dniNoEncontrado = null;
+    if (dni) {
+      errores = validar.controlDni(dni);
+      if (Object.keys(errores).length === 0) {
+        const paciente = await Paciente.findOne({ where: { dni } });
+        if (paciente) {
+          errores.existe = "Ya existe un paciente con ese DNI";
+          res.render("recepcion/registrar", { nacionalidades, errores, dni });
+        } else {
+          dniNoEncontrado = dni;
+        }
+      } else {
+        dniNoEncontrado = dni;
+      }
+    }
+    const nacionalidades = await Nacionalidad.findAll({
+      attributes: ["id", "nombre"],
+    });
+
+    res.render("recepcion/registrar", { nacionalidades, errores, dni });
+  } catch (error) {
+
+  }
+
+
+
+
+
+
+
+};
+
 async function crearPaciente(req, res) {
   const paciente = {
     dni: req.body.dni,
@@ -72,7 +111,7 @@ async function buscarPaciente(req, res) {
         });
 
         if (paciente) {
-          return res.redirect("buscar/" + paciente.id);
+          return res.redirect("paciente/" + paciente.id);
         } else {
           dniNoEncontrado = dni;
         }
@@ -99,15 +138,33 @@ async function buscarPaciente(req, res) {
   }
 }
 
+async function datosPaciente(req, res) {
+  try {
+    const id = req.params.id;
+    const paciente = await Paciente.findByPk(id, {
+      include: [{
+        model: Nacionalidad,
+        as: 'nacionalidad',
+        attributes: ['id', 'nombre']
+      }]
+    });
 
+    if (!paciente) return res.status(404).send("Paciente no encontrado");
+
+    res.render("recepcion/paciente", { paciente });
+  } catch (error) {
+    console.error("Error al obtener el paciente:", error);
+    res.status(500).send("Error interno del servidor");
+  }
+}
 
 
 
 module.exports = {
-  // formularioRegistro,
+  formularioRegistro,
   crearPaciente,
   buscarPaciente,
-  // formularioSeguro,
+  datosPaciente,
   // crearSeguroPaciente,
   // editarSeguroPaciente,
   // formularioEditarPaciente,
