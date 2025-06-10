@@ -15,7 +15,7 @@ block content
             .row 
               .col-md-4.mb-2
                 label.form-label(for="dni") DNI
-                input.form-control(type="number", name="dni", value=paciente.dni, readonly, required)
+                input.form-control(type="number", name="dni", value=paciente.dni, disabled=true, required)
               .col-md-4.mb-2
                 label.form-label(for="nombre") Nombre
                 input.form-control(type="text", name="nombre", value=paciente.nombre, required)
@@ -28,7 +28,7 @@ block content
                   span.text-danger= errores.apellido
               .col-md-4.mb-2
                 label.form-label(for="fechaNacimiento") Fecha de Nacimiento
-                input.form-control(type="date", name="fechaNacimiento", value=paciente.fechaNacimiento, required)
+                input.form-control(type="date", name="fechaNacimiento", max=fechaHoy, required)
                 if errores.fechaNacimiento 
                   span.text-danger= errores.fechaNacimiento
               .col-md-4.mb-2

@@ -18,108 +18,151 @@ block content
           .row.justify-content-center
             .col-md-10.col-lg-8
               .card.shadow-lg.mt-4.mb-5
-
                 .card-body
                   form#formEmergencia.row(method="POST", action="/recepcion/emergencia")
-                    .col-md-4.mb-3
+                    .col-6.mb-3
                       label.form-label(for="dni") DNI (si lo sabe):
                       input.form-control(type="text", id="dni", name="dni")
 
-                    .col-md-4.mb-3
+                    .col-6.mb-3
                       label.form-label(for="nombre") Nombre (si lo sabe):
                       input.form-control(type="text", id="nombre", name="nombre")
 
-                    .col-md-4.mb-3
+                    .col-6.mb-3
                       label.form-label(for="apellido") Apellido (si lo sabe):
                       input.form-control(type="text", id="apellido", name="apellido")
 
-                    .col-md-4.mb-3
+                    .col-6.mb-3
                       label.form-label(for="genero") Sexo
                       select.form-select(name="genero", id="genero" required)
                         option(value="", selected disabled) -- Seleccione --
                         option(value="Masculino") Masculino
                         option(value="Femenino") Femenino
 
-                    .col-md-4.mb-3
-                      label.form-label(for="habitacion") Habitación:
-                      select.form-select(name="habitacion", id="habitacion" required)
-                        option(value="") -- Cargando habitaciones --
+                    .col-12.mb-3
+                      label.form-label(for="ala") Seleccionar Ala
+                      select.form-select(name="ala", id="ala", required disabled)
+                        option(value="") -- Seleccione un género primero --
 
-                    .col-md-4.mb-3
-                      label.form-label(for="cama") Cama disponible:
-                      select.form-select(name="cama", id="cama" required)
-                        option(value="") -- Seleccionar habitación primero --
+                    .col-6.mb-3
+                      label.form-label(for="habitacion") Habitación
+                      select.form-select(name="habitacion", id="habitacion" required disabled)
+                        option(value="") -- Seleccione una ala primero --
 
-                    .mb-3
-                      label.form-label(for="diagnosticoInicial") Diagnóstico preliminar:
-                      textarea.form-control#diagnosticoInicial(
-                        name="diagnosticoInicial",
-                        rows="3",
-                        required
-                      )
+                    .col-6.mb-3
+                      label.form-label(for="cama") Cama disponible
+                      select.form-select(name="cama", id="cama" required disabled)
+                        option(value="") -- Seleccione habitación primero --
+
+                    .col-12.mb-3
+                      label.form-label(for="diagnosticoInicial") Diagnóstico preliminar
+                      textarea.form-control#diagnosticoInicial(name="diagnosticoInicial" rows="3" required)
 
                     .text-center
                       button.btn.btn-danger.mt-3(type="submit")
                         i.fas.fa-user-plus.mr-2
                         | Admitir de Emergencia
 
+  // Inyectamos los datos del servidor
   script.
-    const alasData = !{JSON.stringify(alasEmergencia)};
+    const alasEmergencia = !{JSON.stringify(alasEmergencia)};
 
+  script.
     document.addEventListener('DOMContentLoaded', () => {
+      const generoSelect     = document.getElementById('genero');
+      const alaSelect        = document.getElementById('ala');
       const habitacionSelect = document.getElementById('habitacion');
-      const camaSelect = document.getElementById('cama');
+      const camaSelect       = document.getElementById('cama');
 
-      const alaEmergencia = Array.isArray(alasData) && alasData.length > 0
-        ? alasData[0]
-        : null;
+      let generoSeleccionado = '';
 
-      function poblarHabitaciones() {
-        habitacionSelect.innerHTML = ''; 
-        if (!alaEmergencia) {
-          habitacionSelect.innerHTML = '<option value="">(Ala no disponible)</option>';
-          return;
-        }
-        const habitaciones = alaEmergencia.habitaciones || [];
-        if (habitaciones.length === 0) {
-          habitacionSelect.innerHTML = '<option value="">(Sin habitaciones)</option>';
-          return;
-        }
-        // Opción por defecto
-        habitacionSelect.innerHTML = '<option value="">-- Seleccione una habitación --</option>';
-        habitaciones.forEach(hab => {
-          habitacionSelect.innerHTML += `<option value="${hab.id}">N° ${hab.numero}</option>`;
-        });
+      function clearOptions(selectEl, firstOptionText) {
+        selectEl.innerHTML = `<option value="">${firstOptionText}</option>`;
       }
 
-      function poblarCamasPorHabitacion(habitacionId) {
-        camaSelect.innerHTML = '';
-        if (!alaEmergencia) {
-          camaSelect.innerHTML = '<option value="">(Ala no disponible)</option>';
-          return;
-        }
+      // 1) Cuando eligen género
+      generoSelect.addEventListener('change', () => {
+        generoSeleccionado = generoSelect.value;
 
-        const habitaciones = alaEmergencia.habitaciones || [];
-        const habitacion = habitaciones.find(h => h.id === habitacionId);
-        if (!habitacion || !habitacion.camas || habitacion.camas.length === 0) {
-          camaSelect.innerHTML = '<option value="">(Sin camas disponibles)</option>';
-          return;
-        }
+        // habilitar ala
+        clearOptions(alaSelect, '-- Seleccione --');
+        alaSelect.disabled = false;
 
-        camaSelect.innerHTML = '<option value="">-- Seleccione una cama --</option>';
-        habitacion.camas.forEach(cama => {
-          camaSelect.innerHTML += `<option value="${cama.id}">Cama ${cama.numero}</option>`;
+        // reset habitación y cama
+        clearOptions(habitacionSelect, '-- Seleccione una ala primero --');
+        habitacionSelect.disabled = true;
+        clearOptions(camaSelect, 'Seleccione habitación primero');
+        camaSelect.disabled = true;
+
+        // poblar alas
+        alasEmergencia.forEach(ala => {
+          const opt = new Option(ala.nombre, ala.id);
+          alaSelect.add(opt);
         });
-      }
+      });
 
-      poblarHabitaciones();
+      // 2) Cuando eligen ala
+      alaSelect.addEventListener('change', () => {
+        const alaId = alaSelect.value;
+        clearOptions(habitacionSelect, '-- Seleccione --');
+        habitacionSelect.disabled = false;
+        clearOptions(camaSelect, 'Seleccione habitación primero');
+        camaSelect.disabled = true;
 
+        const ala = alasEmergencia.find(a => a.id == alaId);
+        if (!ala) return;
+
+        // Filtrar habitaciones:
+        // - t>ener al menos UNA cama libre
+        // - NINGUNA cama ocupada de género distinto
+        const filtradas = ala.habitaciones.filter(hab => {
+          const camasLibres = hab.camas.filter(c => c.estado);
+          if (!camasLibres.length) return false;
+
+          // camas ocupadas (traslados) en esta habitación
+          const ocupadas = hab.camas
+            .filter(c => c.estado === false || c.trasladosInternacion.length > 0)
+            .map(c => c.trasladosInternacion[0]?.admisionProvisional?.generoPaciente)
+            .filter(Boolean); // géneros existentes
+
+          // si alguna cama ocupada tiene género distinto, descartamos
+          const conflicto = ocupadas.some(gen => gen !== generoSeleccionado);
+          return !conflicto;
+        });
+
+        filtradas.forEach(hab => {
+          const opt = new Option(`Habitación ${hab.numero}`, hab.id);
+          habitacionSelect.add(opt);
+        });
+      });
+
+      // 3) Cuando eligen habitación
       habitacionSelect.addEventListener('change', () => {
-        const habitacionId = parseInt(habitacionSelect.value);
-        if (isNaN(habitacionId)) {
-          camaSelect.innerHTML = '<option value="">-- Seleccionar habitación primero --</option>';
+        const alaId = alaSelect.value;
+        const habId = habitacionSelect.value;
+        clearOptions(camaSelect, '-- Seleccione --');
+        camaSelect.disabled = false;
+
+        const ala = alasEmergencia.find(a => a.id == alaId);
+        const hab = ala?.habitaciones.find(h => h.id == habId);
+        if (!hab) return;
+
+        // Mostrar sólo camas libres y género compatible
+        const camasDisp = hab.camas.filter(c => {
+          if (!c.estado) return false; // no está libre
+          if (!c.trasladosInternacion.length) return true; // libre sin ocupante
+          const gen = c.trasladosInternacion[0].admisionProvisional.generoPaciente;
+          return gen === generoSeleccionado;
+        });
+
+        if (!camasDisp.length) {
+          camaSelect.innerHTML = '<option value="">No hay camas disponibles</option>';
           return;
         }
-        poblarCamasPorHabitacion(habitacionId);
+
+        camasDisp.forEach(cama => {
+          const opt = new Option(`Cama ${cama.numero}`, cama.id);
+          camaSelect.add(opt);
+        });
       });
     });

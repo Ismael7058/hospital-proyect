@@ -17,6 +17,7 @@ block content
                   th(scope="col") DNI
                   th(scope="col") Nombre
                   th(scope="col") Apellido
+                  th(scope="col") Genero
                   th(scope="col") Fecha Ingreso
                   th(scope="col") Cama
                   th(scope="col") Habitación
@@ -31,6 +32,7 @@ block content
                         td= adm.dni && adm.dni ? adm.dni : "Desconocido"
                         td= adm.nombre
                         td= adm.apellido
+                        td= adm.generoPaciente
                         td= traslado.fechaInicio ? traslado.fechaInicio.toLocaleDateString('es-AR') : '-'
                         td= traslado.cama && traslado.cama.numero ? traslado.cama.numero : '-'
                         td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.numero ? traslado.cama.habitacion.numero : '-'

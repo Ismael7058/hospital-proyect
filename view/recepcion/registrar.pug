@@ -1,60 +1,59 @@
 extends ../layout
+
 block content
   include ../compartido/header
   section.row.h-100.section
     include aside
     main.col-10.main-bg-img
-      .contenedor
-        h2.mb-4.text-center.mt-4 Registrar Paciente
-
+      .contenedor.row.justify-content-center
+        h2.text-center Registrar Paciente
         form#registro-form.d-flex.flex-column.align-items-center(action="/recepcion/registrar" method="POST")
           .border.p-3.mb-4.seccion-form.col-7.rounded
             legend.fw-bold.mb-4 Datos del Paciente
-            .row 
+            .row
               .col-md-4.mb-3
                 label.form-label(for="dni") DNI
-                input.form-control(type="number", name="dni", value= dni, required)
-
+                input.form-control(type="number", name="dni", value=dni, required)
+                if errores && errores.dni
+                  .text-danger.small.mt-1 #{errores.dni}
               .col-md-4.mb-3
                 label.form-label(for="nombre") Nombre
-                input.form-control(type="text", name="nombre", required)
-
+                input.form-control(type="text", name="nombre", value=(datos && datos.nombre) || "", required)
               .col-md-4.mb-3
                 label.form-label(for="apellido") Apellido
-                input.form-control(type="text", name="apellido", required)
-
+                input.form-control(type="text", name="apellido", value=(datos && datos.apellido) || "", required)
               .col-md-4.mb-3
                 label.form-label(for="fechaNacimiento") Fecha de Nacimiento
-                input.form-control(type="date", name="fechaNacimiento", required)
-
+                input.form-control(type="date", name="fechaNacimiento", value=(datos && datos.fechaNacimiento) || "", required)
               .col-md-4.mb-3
                 label.form-label(for="genero") Sexo
                 select.form-select(name="genero", required)
-                  option(value="", selected disabled) -- Seleccione --
-                  option(value="Masculino") Masculino
-                  option(value="Femenino") Femenino
-
-
+                  option(value="", selected=(!(datos && datos.genero))) -- Seleccione --
+                  option(value="Masculino", selected=(datos && datos.genero === "Masculino")) Masculino
+                  option(value="Femenino", selected=(datos && datos.genero === "Femenino")) Femenino
               .col-md-4.mb-3
                 label.form-label(for="nacionalidad") Nacionalidad
                 select.form-select(name="nacionalidad", required)
-                  option(value="", selected disabled) -- Seleccione --
+                  option(value="", selected=!(datos && datos.nacionalidad)) -- Seleccione --
                   each n in nacionalidades
-                    option(value=n.id)= n.nombre
-
+                    option(value=n.id, selected=(datos && datos.nacionalidad == n.id))= n.nombre
               .col-md-12.mb-3
                 label.form-label(for="domicilio") Domicilio
-                input.form-control(type="text", name="domicilio", required)
-
+                input.form-control(type="text", name="domicilio", value=(datos && datos.domicilio) || "", required)
               .col-md-6.mb-3
                 label.form-label(for="email") Email
-                input.form-control(type="email", name="email", required)
-
+                input.form-control(type="email", name="email", value=(datos && datos.email) || "", required)
               .col-md-6.mb-3
                 label.form-label(for="telefono") Teléfono
-                input.form-control(type="number", name="telefono", required)
+                input.form-control(type="number", name="telefono", value=(datos && datos.telefono) || "", required)
           .text-center.mt-4
             button.btn.btn-primary.fixed-submit(type="submit") Registrar Paciente
+
+        if errores && errores.existe && id
+          .col-7.align-items-center
+            .alert.alert-warning.row.justify-content-center
+              span.text-center #{errores.existe}
+              a#verPaciente.btn.btn-warning.col-4(href=`/recepcion/paciente/${id}`) Ver paciente existente
         // Modal de confirmación
       div#confirmModal.modal.fade(tabindex="-1")
         .modal-dialog
@@ -67,11 +66,14 @@ block content
             .modal-footer.bg-light.py-0.py-1
               button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
               button#confirmarEnvio.btn.btn-primary(type="button") Confirmar
+
   script.
     document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("registro-form");
-      const submitButton = form.querySelector("button[type='submit']");
       const confirmModal = new bootstrap.Modal(document.getElementById("confirmModal"));
+      const confirmarBtn = document.getElementById("confirmarEnvio");
+      const verPacienteBtn = document.getElementById("verPaciente");
+
       let confirmed = false;
 
       form.addEventListener("submit", function (e) {
@@ -81,13 +83,18 @@ block content
         }
       });
 
-      document.getElementById("confirmarEnvio").addEventListener("click", function () {
+      confirmarBtn.addEventListener("click", function () {
         confirmed = true;
         confirmModal.hide();
-        form.submit(); // ahora sí se envía
+        form.submit();
       });
+
+      // Ocultar el botón de ver paciente si el usuario edita algo
+      if (verPacienteBtn) {
+        form.querySelectorAll("input, select").forEach(input => {
+          input.addEventListener("input", () => {
+            verPacienteBtn.style.display = "none";
+          });
+        });
+      }
     });
-
-
-
-

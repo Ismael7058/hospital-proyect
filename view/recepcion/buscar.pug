@@ -10,7 +10,7 @@ block content
 
         .row.col-10
           .col-4.d-flex.align-items-start.flex-column
-            form#formBuscarPorDNI.d-flex.align-items-center(action="/recepcion/buscar" method="POST")
+            form#formBuscarPorDNI.d-flex.align-items-center(action="/recepcion/buscar" method="GET")
               .d-flex.align-items-center
                 input#dniBuscar.form-control.rounded-0.rounded-start(type="text", name="dni", value=dniNoEncontrado || "", placeholder="Ingresar DNI", required)
                 button#botonBuscar.btn.btn-primary.rounded-0.rounded-end.border-0(type="submit") Buscar
