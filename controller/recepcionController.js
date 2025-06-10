@@ -45,63 +45,7 @@ async function formularioRegistro(req, res) {
 }
 
 
-async function crearPaciente(req, res) {
-  const paciente = {
-    dni: req.body.dni,
-    nombre: req.body.nombre,
-    apellido: req.body.apellido,
-    genero: req.body.genero,
-    fechaNacimiento: req.body.fechaNacimiento,
-    idNacionalidad: req.body.nacionalidad,
-    domicilio: req.body.domicilio,
-    email: req.body.email,
-    telefono: req.body.telefono
-  };
-  const errores = validarCamposPaciente(paciente);
 
-  if (Object.keys(errores).length > 0) {
-    const nacionalidades = await Nacionalidad.findAll({
-      attributes: ["id", "nombre"],
-    });
-    return res.status(400).render("recepcion/registrar", { errores, nacionalidades });
-  }
-  try {
-    const pacienteExiste = await Paciente.findOne({ where: { dni: paciente.dni } });
-
-    if (pacienteExiste) {
-      const nacionalidades = await Nacionalidad.findAll({
-        attributes: ["id", "nombre"],
-      });
-      return res.status(400).render("recepcion/registrar", {
-        errores: { dni: "Ya existe un paciente con este DNI" },
-        nacionalidades
-      });
-    }
-    const newPaciente = await Paciente.create(paciente);
-    res.redirect(`/recepcion/buscar/${newPaciente.id}`);
-  } catch (error) {
-    console.error("Error al crear el paciente:", error);
-    if (error.name === "SequelizeValidationError") {
-      return res.status(400).send("Error de validación en los datos del paciente.");
-    }
-    res.status(500).send("Error al registrar el paciente.");
-  }
-
-}
-
-function validarCamposPaciente(datos) {
-  const errores = {};
-  if (!datos.dni) errores.dni = 'El campo DNI es obligatorio';
-  if (!datos.nombre) errores.nombre = 'El campo Nombre es obligatorio';
-  if (!datos.apellido) errores.apellido = 'El campo Apellido es obligatorio';
-  if (!datos.genero) errores.genero = 'El campo Género es obligatorio';
-  if (!datos.fechaNacimiento) errores.fechaNacimiento = 'La Fecha de Nacimiento es obligatoria';
-  if (!datos.idNacionalidad) errores.idNacionalidad = 'La Nacionalidad es obligatoria';
-  if (!datos.domicilio) errores.domicilio = 'El Domicilio es obligatorio';
-  if (!datos.email) errores.email = 'El Email es obligatorio';
-  if (!datos.telefono) errores.telefono = 'El Teléfono es obligatorio';
-  return errores;
-};
 
 async function datosPaciente(req, res) {
   try {
@@ -123,66 +67,8 @@ async function datosPaciente(req, res) {
   }
 }
 
-async function buscarPaciente(req, res) {
-  const dni = req.body.dni;
-  try {
-    const errores = controlDni(dni);
-    if (Object.keys(errores).length > 0) {
-      const pacientes = await Paciente.findAll({
-        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
-      });
-
-      return res.render("recepcion/buscar", {
-        pacientes,
-        dniNoEncontrado: dni,
-        errores
-      });
-    }
-    const paciente = await Paciente.findOne({
-      where: { dni },
-      include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
-    });
-
-    if (!paciente) {
-      const pacientes = await Paciente.findAll({
-        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
-      });
-
-      return res.render("recepcion/buscar", {
-        pacientes,
-        dniNoEncontrado: dni,
-        errores
-      });
-    }
-    res.redirect("buscar/" + paciente.id);
-  } catch (error) {
-    console.error("Error al buscar el paciente:", error);
-    res.status(500).send("Error al buscar el paciente.");
-  }
-}
-
-function controlDni(dni){
-  const errores = {};
-  if (!/^\d{8,}$/.test(dni)) {
-    errores.dni = "DNI no valido";
-  };
-  return errores;
-}
 
 
-
-async function buscarPacienteVista(req, res) {
-  ;
-  try {
-    const pacientes = await Paciente.findAll({
-      include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
-    });
-    res.render("recepcion/buscar", { pacientes, mensaje: "" , errores:{}});
-  } catch (error) {
-    console.error("Error al obtener los pacientes:", error);
-    res.status(500).send("Error al obtener los pacientes.");
-  }
-}
 
 // Controlador
 async function formularioSeguro(req, res) {
@@ -231,20 +117,20 @@ async function formularioSeguro(req, res) {
 
 async function crearSeguroPaciente(req, res) {
   const pacienteId = req.params.id;
-const { seguroNuevo, numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo } = req.body;
-  
+  const { seguroNuevo, numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo } = req.body;
+
   try {
     const paciente = await Paciente.findByPk(pacienteId, {
       include: [{
         model: SeguroPaciente,
-        include: [{ model: SeguroMedico, attributes: ['id','nombre'] }]
+        include: [{ model: SeguroMedico, attributes: ['id', 'nombre'] }]
       }]
     });
     if (!paciente) {
       return res.status(404).send("Paciente no encontrado");
     }
 
-    const listaSeguros = await SeguroMedico.findAll({ attributes: ['id','nombre'] });
+    const listaSeguros = await SeguroMedico.findAll({ attributes: ['id', 'nombre'] });
 
     const seguroExistente = paciente.SeguroPacientes
       .some(sp => String(sp.idSeguroMedico) === String(seguroNuevo))
@@ -252,23 +138,23 @@ const { seguroNuevo, numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionN
       return res.status(400).render("recepcion/seguro", {
         errores: { seguro: "Ya existe ese seguro para este paciente." },
         paciente,
-        seguroMedico: listaSeguros, erroresCreate:{}, erroresUpdate: {}
+        seguroMedico: listaSeguros, erroresCreate: {}, erroresUpdate: {}
       });
     }
 
     const erroresCreate = {};
-    validarDatosSeguro({ numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo}, erroresCreate);
+    validarDatosSeguro({ numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo }, erroresCreate);
     if (Object.keys(erroresCreate).length > 0) {
       return res.status(400).render("recepcion/seguro", {
         erroresCreate,
         paciente,
-        seguroMedico: listaSeguros, 
-        erroresUpdate:{}
+        seguroMedico: listaSeguros,
+        erroresUpdate: {}
       });
     }
 
     await SeguroPaciente.create(
-      { 
+      {
         idSeguroMedico: seguroNuevo,
         idPaciente: pacienteId,
         numeroAfiliado: numeroAfiliadoNuevo,
@@ -298,7 +184,7 @@ function validarDatosSeguro({ numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFina
     if (isNaN(fv.getTime()) || fv > hoy) {
       erroresCreate.fechaVigenciaNuevo = "La Fecha de Vigencia no puede ser mayor a hoy.";
     }
-  }else {
+  } else {
     erroresCreate.fechaVigenciaNuevo = "La Fecha de Vigencia es obligatoria.";
   }
 
@@ -326,13 +212,13 @@ async function editarSeguroPaciente(req, res) {
       return res.status(404).send("No se encontró el seguro para actualizar.");
     }
     let paciente = await Paciente.findByPk(idPaciente, {
-        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
+      include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
     });
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
     let erroresUpdate = {};
-    validarDatosSeguroDos({numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar}, erroresUpdate );
-    if (Object.keys(erroresUpdate).length > 0){
+    validarDatosSeguroDos({ numeroAfiliadoEditar, fechaVigenciaEditar, fechaFinalizacionEditar }, erroresUpdate);
+    if (Object.keys(erroresUpdate).length > 0) {
       paciente = await Paciente.findByPk(idPaciente, {
         include: [
           {
@@ -348,7 +234,7 @@ async function editarSeguroPaciente(req, res) {
       });
 
       const seguroMedico = await SeguroMedico.findAll();
-      return res.render("recepcion/seguro", { paciente, seguroMedico, erroresUpdate, erroresCreate:{} });
+      return res.render("recepcion/seguro", { paciente, seguroMedico, erroresUpdate, erroresCreate: {} });
     }
     await seguroRegistro.update({
       numeroAfiliado: numeroAfiliadoEditar,
@@ -377,7 +263,7 @@ function validarDatosSeguroDos({ numeroAfiliadoEditar, fechaVigenciaEditar, fech
     if (isNaN(fv.getTime()) || fv > hoy) {
       erroresUpdate.fechaVigenciaEditar = "La Fecha de Vigencia no puede ser mayor a hoy.";
     }
-  }else {
+  } else {
     erroresUpdate.fechaVigenciaEditar = "La Fecha de Vigencia es obligatoria.";
   }
 
@@ -390,7 +276,7 @@ function validarDatosSeguroDos({ numeroAfiliadoEditar, fechaVigenciaEditar, fech
     if (isNaN(ff.getTime()) || ff <= fv) {
       erroresUpdate.fechaFinalizacionEditar = "La Fecha de Finalización debe ser posterior a la de Vigencia.";
     }
-  }else {
+  } else {
     erroresUpdate.fechaFinalizacionEditar = "La Fecha de Finalización es obligatoria.";
   }
 
@@ -408,7 +294,7 @@ async function formularioEditarPaciente(req, res) {
 
     const nacionalidades = await Nacionalidad.findAll();
     const fechaHoy = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    res.render("recepcion/editar", { paciente, nacionalidades ,errores:{}, fechaHoy});
+    res.render("recepcion/editar", { paciente, nacionalidades, errores: {}, fechaHoy });
   } catch (error) {
     console.error("Error al obtener el paciente:", error.message, error.stack);
     res.status(500).send("Error interno del servidor");
@@ -417,7 +303,7 @@ async function formularioEditarPaciente(req, res) {
 
 async function actualizarPaciente(req, res) {
   const idPaciente = req.params.id;
-  let idNacionalidad= req.body.nacionalidad;
+  let idNacionalidad = req.body.nacionalidad;
   const datosActualizados = {
     nombre: req.body.nombre?.trim(),
     apellido: req.body.apellido?.trim(),
@@ -429,14 +315,14 @@ async function actualizarPaciente(req, res) {
     telefono: req.body.telefono?.trim()
   };
 
-  
+
   try {
     const paciente = await Paciente.findByPk(idPaciente, {
-        include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
+      include: [{ model: Nacionalidad, as: 'nacionalidad', attributes: ['id', 'nombre'] }]
     });
     if (!paciente) return res.status(404).send("Paciente no encontrado");
 
-    if (!req.body.nacionalidad){
+    if (!req.body.nacionalidad) {
       idNacionalidad = paciente.nacionalidad.id;
     }
 
@@ -444,7 +330,7 @@ async function actualizarPaciente(req, res) {
 
     if (!nacionalidad) return res.status(404).send("Nacionalidad no encontrado");
 
-    const errores = controlActualizaPaciente(datosActualizados,nacionalidad);
+    const errores = controlActualizaPaciente(datosActualizados, nacionalidad);
     if (Object.keys(errores).length > 0) {
       const nacionalidades = await Nacionalidad.findAll();
       return res.status(400).render("recepcion/editar", { errores, paciente, nacionalidades });
@@ -531,9 +417,13 @@ function controlActualizaPaciente(datos) {
 async function formularioAdmitir(req, res) {
   const idPaciente = req.params.id;
   try {
+    const paciente = await Paciente.findByPk(id, {
+      attributes: ['genero']
+    });
     const alas = await Ala.findAll({
       include: [{
         model: Habitacion,
+        where: { genero: paciente.genero },
         as: 'habitaciones',
         attributes: ['id', 'numero'],
         include: [{
@@ -563,8 +453,8 @@ async function formularioAdmitir(req, res) {
         return res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
       }
       res.render("recepcion/admitir", { paciente, alas });
-    }else {
-      res.render("recepcion/admitir", { paciente:{}, alas });
+    } else {
+      res.render("recepcion/admitir", { paciente: {}, alas });
     }
 
   } catch (error) {
@@ -593,13 +483,13 @@ async function crearAdmision(req, res) {
 
     const idPaciente = paciente.id;
 
-    const seguroNuevo = {
+    const admisionNueva = {
       idSeguroMedico: req.body.idSeguroMedico,
       idPaciente: idPaciente,
-      numeroAfiliado: req.body.numeroAfiliado,
-      fechaVigencia: new Date(req.body.fechaVigencia),
-      fechaFinalizacion: req.body.fechaFinalizacion ? new Date(req.body.fechaFinalizacion) : null
-    };
+      fechaIngreso: new Date(),
+      motivo: req.body.motivo,
+      diagnosticoInicial: req.body.diagnosticoInicial,
+    }
 
     // 1️Buscar admisión activa (fechaEgreso = null)
     const admisionActiva = await Admision.findOne({
@@ -618,7 +508,7 @@ async function crearAdmision(req, res) {
       where: {
         idPaciente: idPaciente,
         fechaEgreso: {
-          [Op.gt]: seguroNuevo.fechaVigencia
+          [Op.gt]: admisionNueva.fechaVigencia
         }
       }
     });
@@ -632,7 +522,7 @@ async function crearAdmision(req, res) {
     if (!cama || cama.ocupada) {
       return res.status(400).send("La cama seleccionada no está disponible.");
     }
-
+    const habitacion = await Cama.findByPk(cama.idHabitacion)
     // Crear admisión
     const nuevaAdmision = await Admision.create({
       idPaciente: idPaciente,
@@ -642,16 +532,17 @@ async function crearAdmision(req, res) {
       diagnosticoInicial: req.body.diagnosticoInicial
     });
 
-    if (nuevaAdmision) {
-      // Crear TrasladoInternacion que registra los movimientos de traslado de cama del paciente
-      const nuevaTrasladoInternacion = await TrasladoInternacion.create({
-        fechaInicio: new Date(),
-        idAdmision: nuevaAdmision.id,
-        idCama: req.body.cama,
-        motivoCambio: null
-      });
-      await cama.update({ ocupada: true });
-    }
+
+    // Crear TrasladoInternacion que registra los movimientos de traslado de cama del paciente
+    await TrasladoInternacion.create({
+      fechaInicio: new Date(),
+      idAdmision: nuevaAdmision.id,
+      idCama: req.body.cama,
+      motivoCambio: null
+    });
+    await cama.update({ ocupada: true });
+    await habitacion.update({ genero: paciente.genero });
+
 
     res.redirect(`/recepcion/buscar/${idPaciente}/admitido`);
 
@@ -721,9 +612,6 @@ async function admicionVista(req, res) {
 async function formularioEmergencia(req, res) {
   try {
     const alas = await Ala.findAll({
-      where: {
-        id: 4
-      },
       include: [
         {
           model: Habitacion,
@@ -734,17 +622,14 @@ async function formularioEmergencia(req, res) {
               model: Cama,
               as: 'camas',
               attributes: ['id', 'numero', 'estado'],
-              where: {
-                estado: true
-              },
               required: false,
               include: [
                 {
                   model: TrasladoInternacion,
                   as: 'trasladosInternacion',
                   attributes: ['id'],
-                  where:{
-                    fechaFin: null 
+                  where: {
+                    fechaFin: null
                   },
                   required: false,
                   include: [
@@ -761,7 +646,6 @@ async function formularioEmergencia(req, res) {
         }
       ]
     });
-
     res.render("recepcion/admitirEmergencia", {
       alasEmergencia: alas
     });
@@ -773,41 +657,110 @@ async function formularioEmergencia(req, res) {
 
 async function crearAdmisionEmergencia(req, res) {
   const t = await sequelize.transaction();
-
   try {
-    const { nombre, apellido, genero, habitacion, cama, diagnosticoInicial } = req.body;
+    const {
+      nombre,
+      apellido,
+      genero,
+      ala: alaId,
+      habitacion: habId,
+      cama: camaId,
+      diagnosticoInicial
+    } = req.body;
 
+    // 1) Validar género
+    if (!["Masculino", "Femenino"].includes(genero)) {
+      return res.status(400).send("Género inválido");
+    }
+
+    // 2) Validar que el ala exista
+    const ala = await Ala.findByPk(alaId);
+    if (!ala) {
+      return res.status(400).send("Ala no encontrada");
+    }
+
+    // 3) Validar que la cama exista y pertenezca a la habitación
+    const cama = await Cama.findOne({
+      where: { id: camaId, idHabitacion: habitacion.id }
+    });
+    if (!cama) {
+      return res.status(400).send("Cama no encontrada en la habitación seleccionada");
+    }
+
+    // 4) Validar que la habitación exista y pertenezca al ala
+    const habitacion = await Habitacion.findOne({
+      where: { id: habId },
+      include: [{
+        model: Cama,
+        include: [{
+          model: TrasladoInternacion,
+          include: [{
+            model: AdmisionProv,
+            attributes: ["generoPaciente"]
+          }]
+        }, {
+          model: Admision,
+          include: [{
+            model: Paciente,
+            attributes: ["genero"]
+          }]
+        }
+        ],
+      }
+      ]
+    });
+    if (!habitacion) {
+      return res.status(400).send("Habitación no encontrada en el ala seleccionada");
+    }
+
+    console.log(habitacion);
+    // Si existe algún traslado en la habitación con género distinto, error
+    for (const tr of habitacion) {
+      const ocupanteEmergencia = tr.admisionProvisional.generoPaciente;
+      if (ocupanteEmergencia !== genero) {
+        return res
+          .status(400)
+          .send(`La habitación ya tiene un paciente de género ${ocupanteEmergencia}`);
+      }
+      const ocupantePaciente = tr.admision.paciente.genero;
+      if (ocupantePaciente !== genero) {
+        return res
+          .status(400)
+          .send(`La habitación ya tiene un paciente de género ${ocupantePaciente}`);
+      }
+    }
+
+
+    // Crear admisión provisional
     const nuevaAdmisionProv = await AdmisionProv.create(
       {
         nombre: nombre || "Desconocido",
         apellido: apellido || "Desconocido",
         generoPaciente: genero,
-        fechaIngreso: new Date(req.body.fechaVigencia),
+        fechaIngreso: new Date(),
         motivo: diagnosticoInicial
       },
       { transaction: t }
     );
 
-    const nuevoTraslado = await TrasladoInternacion.create(
+    // Registrar traslado
+    await TrasladoInternacion.create(
       {
         idAdmisionProvisional: nuevaAdmisionProv.id,
-        idCama: cama,
+        idCama: cama.id,
         fechaInicio: new Date(),
         fechaFin: null
       },
       { transaction: t }
     );
 
+    // Marcar la cama como ocupada
     await Cama.update(
       { estado: false },
-      {
-        where: { id: cama },
-        transaction: t
-      }
+      { where: { id: cama.id }, transaction: t }
     );
 
     await t.commit();
-
     return res.redirect(`/recepcion/emergencia/${nuevaAdmisionProv.id}`);
   } catch (error) {
     await t.rollback();
@@ -815,6 +768,7 @@ async function crearAdmisionEmergencia(req, res) {
     return res.status(500).send("Error interno al crear admisión de emergencia");
   }
 }
+
 
 async function listaEmergencia(req, res) {
   try {
@@ -904,10 +858,8 @@ async function verEmergencia(req, res) {
 
 module.exports = {
   formularioRegistro,
-  crearPaciente,
+  //crearPaciente,
   datosPaciente,
-  buscarPaciente,
-  buscarPacienteVista,
   formularioSeguro,
   crearSeguroPaciente,
   editarSeguroPaciente,
