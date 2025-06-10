@@ -13,6 +13,10 @@ Admision.init(
       type: DataTypes.DATE,
       allowNull: true
     },
+    motivo: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     diagnosticoInicial: {
       type: DataTypes.STRING,
       allowNull: false

@@ -21,6 +21,10 @@ Habitacion.init(
         model: 'Ala',
         key: 'id'
       }
+    },
+    genero: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
   sequelize,
