@@ -25,7 +25,7 @@ block content
             //–– Formulario: Editar seguro existente
             if paciente.SeguroPacientes && paciente.SeguroPacientes.length > 0
               form#formEditar(
-                action=`/recepcion/buscar/${paciente.id}/seguro/editar`,
+                action=`/recepcion/paciente/${paciente.id}/seguro/editar/`,
                 method='POST',
                 style='display:block'
               )
@@ -82,7 +82,7 @@ block content
 
             //–– Formulario: Agregar nuevo seguro
             form#formAgregar(
-              action=`/recepcion/buscar/${paciente.id}/seguro`,
+              action=`/recepcion/paciente/${paciente.id}/seguro`,
               method='POST',
               style='display:none'
             )

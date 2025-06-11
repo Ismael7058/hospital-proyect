@@ -12,32 +12,47 @@ block content
           .row
             h2.text-center.mt-4 Admitir Paciente
             .row.border.rounded.p-4.bg-light.shadow.mt-5
-              - const actionURL = paciente ? `/recepcion/buscar/${paciente.id}/admitir` : '/recepcion/admitir'
+              - const actionURL = paciente ? `/recepcion/paciente/${paciente.id}/admitir/` : '/recepcion/admitir/'
               form.row(method="POST", action=actionURL)
                 .col-6.my-3
                   label.form-label.rounded-0.rounded-start(for='dni') Ingresar Dni
-
-                  if (!paciente)
-                    input.form-control#dni(
-                      type='text',
-                      name='dni',
-                      value=(paciente && paciente.dni) ? paciente.dni : "",
-                      required
-                      )
-                  else
-                    .d-flex.align-items-center
+                  if paciente && paciente.dni
+                      .d-flex.align-items-center
                         input.form-control#dni(
                           type='text',
                           name='dni',
-                          required
+                          value=(paciente && paciente.dni) ? paciente.dni : "",
+                          disabled, required
                         )
-                        button#botonBuscar.btn.btn-primary.rounded-0.rounded-end.border-0(type="submit") Buscar
+                  else 
+                    if errores && !errores.dni && dniNoEncontrado && dniNoEncontrado.length > 0
+                      .row.align-items-center
+                        #inputDni.col-9
+                          input.form-control#dni(
+                            type='text',
+                            name='dni',
+                            value=(errores && dniNoEncontrado) ? dniNoEncontrado : "",
+                            required
+                          )
+                        .col-2
+                          a#btnRegistrar.btn.btn-success(href=`/recepcion/registrar?dni=${dniNoEncontrado}`) Registrar
+                      span.text-danger #{errores.dniError}
+                    else 
+                      input.form-control.col-10#dni(
+                        type='text',
+                        name='dni',
+                        required
+                        )
+
                 .col-6.my-3
                   label.form-label(for="motivo") Motivo:
                   select.form-select(name="motivo") 
                     option(value="") -- Seleccionar --
-                    option(value="Turno") Cita Medica
                     option(value="Derivacion") Derivacion Medica
+                    if turnoHoy 
+                      option(value="Turno") Cita Medica
+                  if turnoHoy
+                    input(type="hidden", name="turnoId", value=turnoHoy.id)
 
 
                 .col-6.mb-3
@@ -109,6 +124,31 @@ block content
           habitacionSeleccionada.camas.forEach(c => {
             camaSelect.innerHTML += `<option value="${c.id}">Cama ${c.numero}</option>`;
           });
+        }
+      });
+    });
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const dniInput = document.getElementById('dni');
+      const registrarBtn = document.getElementById('btnRegistrar');
+      const contInput = document.getElementById('inputDni');
+
+      dniInput?.addEventListener('input', () => {
+        // Eliminar span de error si existe en todo el documento
+        const errorSpan = document.querySelector('span.text-danger');
+        if (errorSpan) {
+          errorSpan.remove();
+        }
+
+        // Eliminar botón registrar si existe
+        if (registrarBtn) {
+          registrarBtn.remove();
+        }
+
+        // Cambiar col-9 a col-12 si es el único className
+        if (contInput?.classList.contains('col-9') && contInput.classList.length === 1) {
+          contInput.classList.remove('col-9');
+          contInput.classList.add('col-12');
         }
       });
     });

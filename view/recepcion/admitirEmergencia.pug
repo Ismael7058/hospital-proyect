@@ -63,106 +63,73 @@ block content
                         i.fas.fa-user-plus.mr-2
                         | Admitir de Emergencia
 
-  // Inyectamos los datos del servidor
   script.
-    const alasEmergencia = !{JSON.stringify(alasEmergencia)};
+    const alasData = !{JSON.stringify(alasEmergencia)};
 
-  script.
-    document.addEventListener('DOMContentLoaded', () => {
-      const generoSelect     = document.getElementById('genero');
-      const alaSelect        = document.getElementById('ala');
-      const habitacionSelect = document.getElementById('habitacion');
-      const camaSelect       = document.getElementById('cama');
+    const generoSelect = document.getElementById('genero');
+    const alaSelect = document.getElementById('ala');
+    const habitacionSelect = document.getElementById('habitacion');
+    const camaSelect = document.getElementById('cama');
 
-      let generoSeleccionado = '';
+    generoSelect.addEventListener('change', () => {
+      const generoSeleccionado = generoSelect.value;
+      alaSelect.innerHTML = '<option value="">-- Seleccione un ala --</option>';
+      habitacionSelect.innerHTML = '<option value="">-- Seleccione habitación primero --</option>';
+      camaSelect.innerHTML = '<option value="">-- Seleccione cama primero --</option>';
+      alaSelect.disabled = false;
+      habitacionSelect.disabled = true;
+      camaSelect.disabled = true;
 
-      function clearOptions(selectEl, firstOptionText) {
-        selectEl.innerHTML = `<option value="">${firstOptionText}</option>`;
-      }
+      const alasFiltradas = alasData.filter(ala =>
+        ala.habitaciones.some(h => !h.genero || h.genero === generoSeleccionado)
+      );
 
-      // 1) Cuando eligen género
-      generoSelect.addEventListener('change', () => {
-        generoSeleccionado = generoSelect.value;
+      alasFiltradas.forEach(ala => {
+        const option = document.createElement('option');
+        option.value = ala.id;
+        option.textContent = ala.nombre || `Ala ${ala.id}`;
+        alaSelect.appendChild(option);
+      });
+    });
 
-        // habilitar ala
-        clearOptions(alaSelect, '-- Seleccione --');
-        alaSelect.disabled = false;
+    alaSelect.addEventListener('change', () => {
+      const alaId = alaSelect.value;
+      const generoSeleccionado = generoSelect.value;
+      habitacionSelect.innerHTML = '<option value="">-- Seleccione habitación --</option>';
+      camaSelect.innerHTML = '<option value="">-- Seleccione cama primero --</option>';
+      habitacionSelect.disabled = false;
+      camaSelect.disabled = true;
 
-        // reset habitación y cama
-        clearOptions(habitacionSelect, '-- Seleccione una ala primero --');
-        habitacionSelect.disabled = true;
-        clearOptions(camaSelect, 'Seleccione habitación primero');
-        camaSelect.disabled = true;
+      const ala = alasData.find(a => a.id == alaId);
+      const habitaciones = ala.habitaciones.filter(h => !h.genero || h.genero === generoSeleccionado);
 
-        // poblar alas
-        alasEmergencia.forEach(ala => {
-          const opt = new Option(ala.nombre, ala.id);
-          alaSelect.add(opt);
-        });
+      habitaciones.forEach(habitacion => {
+        const option = document.createElement('option');
+        option.value = habitacion.id;
+        option.textContent = `Habitación ${habitacion.numero}`;
+        habitacionSelect.appendChild(option);
+      });
+    });
+
+    habitacionSelect.addEventListener('change', () => {
+      const alaId = alaSelect.value;
+      const habitacionId = habitacionSelect.value;
+      const generoSeleccionado = generoSelect.value;
+      camaSelect.innerHTML = '<option value="">-- Seleccione cama --</option>';
+      camaSelect.disabled = false;
+
+      const ala = alasData.find(a => a.id == alaId);
+      const habitacion = ala.habitaciones.find(h => h.id == habitacionId);
+
+      const camasDisponibles = habitacion.camas.filter(cama => {
+        const ocupada = cama.trasladosInternacion.some(t => t.fechaFin === null);
+        return !ocupada && cama.estado === "Libre";
       });
 
-      // 2) Cuando eligen ala
-      alaSelect.addEventListener('change', () => {
-        const alaId = alaSelect.value;
-        clearOptions(habitacionSelect, '-- Seleccione --');
-        habitacionSelect.disabled = false;
-        clearOptions(camaSelect, 'Seleccione habitación primero');
-        camaSelect.disabled = true;
-
-        const ala = alasEmergencia.find(a => a.id == alaId);
-        if (!ala) return;
-
-        // Filtrar habitaciones:
-        // - t>ener al menos UNA cama libre
-        // - NINGUNA cama ocupada de género distinto
-        const filtradas = ala.habitaciones.filter(hab => {
-          const camasLibres = hab.camas.filter(c => c.estado);
-          if (!camasLibres.length) return false;
-
-          // camas ocupadas (traslados) en esta habitación
-          const ocupadas = hab.camas
-            .filter(c => c.estado === false || c.trasladosInternacion.length > 0)
-            .map(c => c.trasladosInternacion[0]?.admisionProvisional?.generoPaciente)
-            .filter(Boolean); // géneros existentes
-
-          // si alguna cama ocupada tiene género distinto, descartamos
-          const conflicto = ocupadas.some(gen => gen !== generoSeleccionado);
-          return !conflicto;
-        });
-
-        filtradas.forEach(hab => {
-          const opt = new Option(`Habitación ${hab.numero}`, hab.id);
-          habitacionSelect.add(opt);
-        });
-      });
-
-      // 3) Cuando eligen habitación
-      habitacionSelect.addEventListener('change', () => {
-        const alaId = alaSelect.value;
-        const habId = habitacionSelect.value;
-        clearOptions(camaSelect, '-- Seleccione --');
-        camaSelect.disabled = false;
-
-        const ala = alasEmergencia.find(a => a.id == alaId);
-        const hab = ala?.habitaciones.find(h => h.id == habId);
-        if (!hab) return;
-
-        // Mostrar sólo camas libres y género compatible
-        const camasDisp = hab.camas.filter(c => {
-          if (!c.estado) return false; // no está libre
-          if (!c.trasladosInternacion.length) return true; // libre sin ocupante
-          const gen = c.trasladosInternacion[0].admisionProvisional.generoPaciente;
-          return gen === generoSeleccionado;
-        });
-
-        if (!camasDisp.length) {
-          camaSelect.innerHTML = '<option value="">No hay camas disponibles</option>';
-          return;
-        }
-
-        camasDisp.forEach(cama => {
-          const opt = new Option(`Cama ${cama.numero}`, cama.id);
-          camaSelect.add(opt);
-        });
+      camasDisponibles.forEach(cama => {
+        const option = document.createElement('option');
+        option.value = cama.id;
+        option.textContent = `Cama ${cama.numero}`;
+        camaSelect.appendChild(option);
       });
     });
