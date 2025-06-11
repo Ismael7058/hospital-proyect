@@ -1,6 +1,7 @@
 const {
   Nacionalidad,
-  Paciente
+  Paciente,
+  Turno
 } = require("../model");
 const validar = require('./validarDatos')
 
@@ -179,11 +180,27 @@ async function datosPaciente(req, res) {
   }
 }
 
+async function listarTurnos(req, res) {
+  try {
+    const turno = await Turno.findAll({
+      where:{estado:true},
+      include:[{
+        model: Paciente,
+        as: 'paciente'
+      }]
+    });
+    return res.render('recepcion/listaTurno',{turno});
+  } catch (error) {
+    console.error("Error al obtener la lista de turno:", error);
+    res.status(500).send("Error interno del servidor");
+  }
+}
 
 
 module.exports = {
   formularioRegistro,
   crearPaciente,
   buscarPaciente,
-  datosPaciente
+  datosPaciente,
+  listarTurnos
 };

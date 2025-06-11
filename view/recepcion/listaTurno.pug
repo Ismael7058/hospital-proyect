@@ -1,0 +1,86 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+  section.row.h-100.section
+    include aside
+    main.col-10.main-bg-img
+      .contenedor.d-flex.flex-column.align-items-center
+        h2.mb-4.text-center.mt-4 Lista de Turnos
+
+        // Inputs de filtro
+        .col-10.mb-3
+          .row
+            .col-md-4
+              input.form-control(type="text", id="filtroDni", placeholder="Filtrar por DNI")
+            .col-md-4
+              input.form-control(type="text", id="filtroNombre", placeholder="Filtrar por Nombre")
+            .col-md-4
+              input.form-control(type="text", id="filtroApellido", placeholder="Filtrar por Apellido")
+
+        .col-10.mt-2
+          .table-responsive(style="max-height: 35rem; overflow-y: auto;")
+            table.table.table-hover.table-bordered#tablaTurnos
+              thead.table-dark
+                tr
+                  th(scope="col") ID
+                  th(scope="col") Fecha
+                  th(scope="col") DNI Paciente
+                  th(scope="col") Nombre
+                  th(scope="col") Apellido
+                  th(scope="col") Acciones
+              if turno.length > 0
+                tbody
+                  each t in turno
+                    tr
+                      td= t.id
+                      td= t.fechaTurno.toLocaleDateString('es-AR')
+                      td= t.paciente && t.paciente.dni ? t.paciente.dni : 'Desconocido'
+                      td= t.paciente && t.paciente.nombre ? t.paciente.nombre : '-'
+                      td= t.paciente && t.paciente.apellido ? t.paciente.apellido : '-'
+                      td.td-center
+                        a.btn.btn-sm.btn-outline-secondary(href=`/turnos/${t.id}/admitir`) Ver
+              else
+                tbody
+                  tr
+                    td(colspan="7").text-center No hay turnos registrados.
+
+  // Script de filtrado
+  script.
+    document.addEventListener('DOMContentLoaded', () => {
+      const filtroDni = document.getElementById('filtroDni');
+      const filtroNombre = document.getElementById('filtroNombre');
+      const filtroApellido = document.getElementById('filtroApellido');
+      const tabla = document.getElementById('tablaTurnos').getElementsByTagName('tbody')[0];
+
+      // Función para normalizar texto (minúsculas y sin tildes)
+      const normalizar = (texto) => {
+        return texto
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+      };
+
+      const filtrar = () => {
+        const dniVal = normalizar(filtroDni.value);
+        const nombreVal = normalizar(filtroNombre.value);
+        const apellidoVal = normalizar(filtroApellido.value);
+
+        Array.from(tabla.rows).forEach(row => {
+          const dni = normalizar(row.cells[2].textContent);
+          const nombre = normalizar(row.cells[3].textContent);
+          const apellido = normalizar(row.cells[4].textContent);
+
+          const coincideDni = dni.includes(dniVal);
+          const coincideNombre = nombre.includes(nombreVal);
+          const coincideApellido = apellido.includes(apellidoVal);
+
+          row.style.display = (coincideDni && coincideNombre && coincideApellido) ? '' : 'none';
+        });
+      };
+
+      filtroDni.addEventListener('input', filtrar);
+      filtroNombre.addEventListener('input', filtrar);
+      filtroApellido.addEventListener('input', filtrar);
+    });
+
