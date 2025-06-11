@@ -1,3 +1,4 @@
+const { render } = require("pug");
 const {
   sequelize,
   Nacionalidad,
@@ -13,6 +14,7 @@ const {
   Turno
 } = require("../model");
 
+const validar = require('./validarDatos')
 const { Op } = require("sequelize");
 
 
@@ -603,6 +605,7 @@ async function admicionVista(req, res) {
 
 async function formularioEmergencia(req, res) {
   try {
+    const errores = {};
     const alas = await Ala.findAll({
       include: [
         {
@@ -639,7 +642,8 @@ async function formularioEmergencia(req, res) {
       ]
     });
     res.render("recepcion/admitirEmergencia", {
-      alasEmergencia: alas
+      alasEmergencia: alas,
+      errores
     });
   } catch (error) {
     console.error('Error al cargar formulario emergencia:', error);
@@ -651,6 +655,7 @@ async function crearAdmisionEmergencia(req, res) {
   const t = await sequelize.transaction();
   try {
     const {
+      dni,
       nombre,
       apellido,
       genero,
@@ -659,7 +664,48 @@ async function crearAdmisionEmergencia(req, res) {
       cama: camaId,
       diagnosticoInicial
     } = req.body;
-
+    let errores = validar.controlDni(dni)
+    if (Object.keys(errores).length > 0) {
+      const alasE = await Ala.findAll({
+        include: [
+          {
+            model: Habitacion,
+            as: 'habitaciones',
+            attributes: ['id', 'numero', 'genero'],
+            include: [
+              {
+                model: Cama,
+                as: 'camas',
+                attributes: ['id', 'numero', 'estado'],
+                required: false,
+                include: [
+                  {
+                    model: TrasladoInternacion,
+                    as: 'trasladosInternacion',
+                    attributes: ['id'],
+                    where: {
+                      fechaFin: null
+                    },
+                    required: false,
+                    include: [
+                      {
+                        model: AdmisionProv,
+                        as: 'admisionProvisional',
+                        attributes: ['generoPaciente']
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      });
+      return res.render("recepcion/admitirEmergencia", {
+        alasEmergencia: alasE,
+        errores
+      });
+    }
     if (!["Masculino", "Femenino"].includes(genero)) {
       return res.status(400).send("Género inválido");
     }
@@ -715,7 +761,7 @@ async function crearAdmisionEmergencia(req, res) {
 
     const cama = habitacion.camas.find(c =>
       c.id.toString() === camaId &&
-      c.estado === "Libre" && 
+      c.estado === "Libre" &&
       !c.trasladosInternacion.some(t => t.fechaFin === null)
     );
 
@@ -736,6 +782,7 @@ async function crearAdmisionEmergencia(req, res) {
 
     const nuevaAdmisionProv = await AdmisionProv.create(
       {
+        dni: dni || null,
         nombre: nombre || "Desconocido",
         apellido: apellido || "Desconocido",
         generoPaciente: genero,

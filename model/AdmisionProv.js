@@ -17,6 +17,10 @@ class AdmisionProv extends Model { }
 
 AdmisionProv.init(
   {
+    dni: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     nombre: {
       type: DataTypes.STRING,
       allowNull: false,

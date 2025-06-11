@@ -35,6 +35,4 @@ router.get('/emergencia/:id', recepcionController.verEmergencia);
 router.get('/listEmergencia', recepcionController.listaEmergencia);
 router.get('/listEmergencia/:id', recepcionController.verEmergencia);
 
-//router.get('alas', recepcionController.camasVista);
-
 module.exports = router;
