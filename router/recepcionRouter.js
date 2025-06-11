@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const recepcionController = require('../controller/recepcionController');
 const pacienteController = require('../controller/pacienteController');
+const camaController = require('../controller/camaController')
 
 router.get('/', (req, res) => res.render('recepcion/home'));
 router.get('/registrar', pacienteController.formularioRegistro);
@@ -34,5 +35,7 @@ router.get('/emergencia/:id', recepcionController.verEmergencia);
 
 router.get('/listEmergencia', recepcionController.listaEmergencia);
 router.get('/listEmergencia/:id', recepcionController.verEmergencia);
+
+router.get('/camas', camaController.verCamas)
 
 module.exports = router;

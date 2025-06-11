@@ -1,0 +1,86 @@
+extends ../layout
+
+block content
+  include ../compartido/header
+
+  section.row.h-100.section
+    include aside
+
+    main.col-10.main-bg-img
+      .contenedor
+        .container.col-8
+          h2.text-center.mt-4.mb-4 Gestión de Alas, Habitaciones y Camas
+
+          //- Select para elegir ala
+          .mb-4
+            label.form-label(for='alaSelect') Seleccionar Ala:
+            select#alaSelect.form-select
+              option(value='', disabled, selected) -- Seleccione un ala --
+              each ala in alas
+                option(value=ala.id)= ala.nombre || `Ala ${ala.id}`
+
+          //- Contenedor de habitaciones
+        #roomsContainer.row.justify-content-center
+
+
+  //- Script para renderizar habitaciones y camas
+  script.
+    const alasData = !{JSON.stringify(alas)};
+    const alaSelect = document.getElementById('alaSelect');
+    const roomsContainer = document.getElementById('roomsContainer');
+
+    function renderRooms(alaId) {
+      roomsContainer.innerHTML = '';
+      const ala = alasData.find(a => a.id == alaId);
+      if (!ala) return;
+      ala.habitaciones.forEach(habitacion => {
+        // Columna
+        const col = document.createElement('div');
+        col.className = 'col-2 mb-4';
+
+        // Card
+        const card = document.createElement('div');
+        card.className = 'card h-100 w-75';
+
+        // Header con color según género
+        const header = document.createElement('div');
+        header.className = 'card-header text-center';
+        header.textContent = `Habitación ${habitacion.numero}`;
+        if (habitacion.genero === 'Femenino') {
+          header.style.backgroundColor = '#ffc0cb'; // rosa
+        } else if (habitacion.genero === 'Masculino') {
+          header.style.backgroundColor = '#add8e6'; // azul claro
+        } else {
+          header.style.backgroundColor = '#ffffff'; // blanco
+        }
+
+        // Body para las camas
+        const body = document.createElement('div');
+        body.className = 'card-body d-flex flex-wrap justify-content-start';
+
+        habitacion.camas.forEach(cama => {
+          const badge = document.createElement('span');
+          badge.className = 'badge me-2 mb-2';
+          // Color según estado de la cama
+          if (cama.estado === 'Libre' || cama.estado === true) {
+            badge.classList.add('bg-success');
+          } else if (cama.estado === 'Ocupado' || cama.estado === false) {
+            badge.classList.add('bg-danger');
+          } else if (cama.estado === 'Mantenimiento') {
+            badge.classList.add('bg-warning');
+          }
+          badge.textContent = `Cama ${cama.numero}`;
+          body.appendChild(badge);
+        });
+
+        card.appendChild(header);
+        card.appendChild(body);
+        col.appendChild(card);
+        roomsContainer.appendChild(col);
+      });
+    }
+
+    alaSelect.addEventListener('change', (e) => {
+      renderRooms(e.target.value);
+    });
+

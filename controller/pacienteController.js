@@ -1,18 +1,8 @@
 const {
-  sequelize,
   Nacionalidad,
-  Paciente,
-  SeguroPaciente,
-  SeguroMedico,
-  Admision,
-  Ala,
-  Habitacion,
-  Cama,
-  TrasladoInternacion,
-  AdmisionProv
+  Paciente
 } = require("../model");
 const validar = require('./validarDatos')
-const { Op } = require("sequelize");
 
 
 async function formularioRegistro(req, res) {
@@ -195,16 +185,5 @@ module.exports = {
   formularioRegistro,
   crearPaciente,
   buscarPaciente,
-  datosPaciente,
-  // crearSeguroPaciente,
-  // editarSeguroPaciente,
-  // formularioEditarPaciente,
-  // actualizarPaciente,
-  // formularioAdmitir,
-  // crearAdmision,
-  // admicionVista,
-  // formularioEmergencia,
-  // crearAdmisionEmergencia,
-  // listaEmergencia,
-  // verEmergencia
+  datosPaciente
 };
