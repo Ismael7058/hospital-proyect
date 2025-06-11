@@ -664,59 +664,34 @@ async function crearAdmisionEmergencia(req, res) {
       cama: camaId,
       diagnosticoInicial
     } = req.body;
-    let errores = validar.controlDni(dni)
-    if (Object.keys(errores).length > 0) {
-      const alasE = await Ala.findAll({
-        include: [
-          {
-            model: Habitacion,
-            as: 'habitaciones',
-            attributes: ['id', 'numero', 'genero'],
-            include: [
-              {
-                model: Cama,
-                as: 'camas',
-                attributes: ['id', 'numero', 'estado'],
-                required: false,
-                include: [
-                  {
-                    model: TrasladoInternacion,
-                    as: 'trasladosInternacion',
-                    attributes: ['id'],
-                    where: {
-                      fechaFin: null
-                    },
-                    required: false,
-                    include: [
-                      {
-                        model: AdmisionProv,
-                        as: 'admisionProvisional',
-                        attributes: ['generoPaciente']
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      });
-      return res.render("recepcion/admitirEmergencia", {
-        alasEmergencia: alasE,
-        errores
-      });
+
+    let errores = {};
+    if (dni) {
+      errores = validar.controlDni(dni);
+      if (Object.keys(errores).length > 0) {
+        const alasE = await Ala.findAll({});
+        return res.render("recepcion/admitirEmergencia", {
+          alasEmergencia: alasE,
+          errores
+        });
+      }
     }
+
     if (!["Masculino", "Femenino"].includes(genero)) {
       return res.status(400).send("Género inválido");
     }
 
-    const ala = await Ala.findByPk(alaId);
-    if (!ala) {
-      return res.status(400).send("Ala no encontrada");
+    let paciente = null;
+    if (dni) {
+      paciente = await Paciente.findOne({ where: { dni } });
     }
+
+    const ala = await Ala.findByPk(alaId);
+    if (!ala) return res.status(400).send("Ala no encontrada");
 
     const habitacion = await Habitacion.findOne({
       where: { id: habId, idAla: alaId },
+      attributes: ['id', 'numero', 'genero'],
       include: [
         {
           model: Cama,
@@ -725,9 +700,7 @@ async function crearAdmisionEmergencia(req, res) {
             {
               model: TrasladoInternacion,
               as: 'trasladosInternacion',
-              where: {
-                fechaFin: null
-              },
+              where: { fechaFin: null },
               required: false,
               include: [
                 {
@@ -750,13 +723,12 @@ async function crearAdmisionEmergencia(req, res) {
         }
       ]
     });
+    if (!habitacion) return res.status(400).send("Habitación no encontrada");
 
-    if (!habitacion) {
-      return res.status(400).send("Habitación no encontrada en el ala seleccionada");
-    }
-
-    if (habitacion.genero !== null && habitacion.genero !== genero) {
-      return res.status(400).send(`La habitación es para pacientes de género ${habitacion.genero}`);
+    if (habitacion.genero && habitacion.genero !== genero) {
+      return res
+        .status(400)
+        .send(`La habitación está reservada para pacientes de género ${habitacion.genero}`);
     }
 
     const cama = habitacion.camas.find(c =>
@@ -764,63 +736,64 @@ async function crearAdmisionEmergencia(req, res) {
       c.estado === "Libre" &&
       !c.trasladosInternacion.some(t => t.fechaFin === null)
     );
+    if (!cama) return res.status(400).send("La cama seleccionada no está disponible");
 
-    if (!cama) {
-      return res.status(400).send("La cama seleccionada no está disponible");
-    }
+    let nuevaAdm;
+    if (paciente) {
+      nuevaAdm = await Admision.create({
+        idPaciente: paciente.id,
+        motivo: "Emergencia",
+        diagnosticoInicial,
+        fechaIngreso: new Date(),
+        fechaEgreso: null
+      }, { transaction: t });
 
-    for (const c of habitacion.camas) {
-      for (const traslado of c.trasladosInternacion || []) {
-        if (traslado.admisionProvisional && traslado.admisionProvisional.generoPaciente !== genero) {
-          return res.status(400).send(`Ya hay un paciente de género ${traslado.admisionProvisional.generoPaciente} en esta habitación`);
-        }
-        if (traslado.admision && traslado.admision.paciente && traslado.admision.paciente.genero !== genero) {
-          return res.status(400).send(`Ya hay un paciente de género ${traslado.admision.paciente.genero} en esta habitación`);
-        }
-      }
-    }
+      await TrasladoInternacion.create({
+        idAdmision: nuevaAdm.id,
+        idCama: cama.id,
+        fechaInicio: new Date(),
+        fechaFin: null,
+        motivoCambio: null
+      }, { transaction: t });
 
-    const nuevaAdmisionProv = await AdmisionProv.create(
-      {
+    } else {
+      nuevaAdm = await AdmisionProv.create({
         dni: dni || null,
         nombre: nombre || "Desconocido",
         apellido: apellido || "Desconocido",
         generoPaciente: genero,
         fechaIngreso: new Date(),
         motivo: diagnosticoInicial
-      },
-      { transaction: t }
-    );
+      }, { transaction: t });
 
-    await TrasladoInternacion.create(
-      {
-        idAdmisionProvisional: nuevaAdmisionProv.id,
+      await TrasladoInternacion.create({
+        idAdmisionProvisional: nuevaAdm.id,
         idCama: cama.id,
         fechaInicio: new Date(),
         fechaFin: null
-      },
-      { transaction: t }
-    );
-    if (habitacion.genero === null) {
-      await Habitacion.update(
-        { genero: genero },
-        { where: { id: habitacion.id }, transaction: t }
-      );
+      }, { transaction: t });
     }
 
-    await Cama.update(
-      { estado: "Ocupado" },
-      { where: { id: cama.id }, transaction: t }
-    );
+    if (habitacion.genero === null) {
+      await habitacion.update({ genero }, { transaction: t });
+    }
+
+    await cama.update({ estado: "Ocupado" }, { transaction: t });
 
     await t.commit();
-    return res.redirect(`/recepcion/emergencia/${nuevaAdmisionProv.id}`);
+
+    if (paciente) {
+      return res.redirect(`/recepcion/paciente/${paciente.id}/admitido`);
+    } else {
+      return res.redirect(`/recepcion/emergencia/${nuevaAdm.id}`);
+    }
   } catch (error) {
     await t.rollback();
     console.error("Error al crear admisión de emergencia:", error);
     return res.status(500).send("Error interno al crear admisión de emergencia");
   }
 }
+
 
 
 async function listaEmergencia(req, res) {
