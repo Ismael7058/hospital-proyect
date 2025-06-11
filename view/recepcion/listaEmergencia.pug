@@ -22,7 +22,7 @@ block content
                   th(scope="col") Cama
                   th(scope="col") Habitación
                   th(scope="col") Ala
-                  th(scope="col") Acciones
+                  th(scope="col") Datos
               if admisiones.length > 0
                 tbody
                   each adm in admisiones
@@ -33,11 +33,11 @@ block content
                         td= adm.nombre
                         td= adm.apellido
                         td= adm.generoPaciente
-                        td= traslado.fechaInicio ? traslado.fechaInicio.toLocaleDateString('es-AR') : '-'
-                        td= traslado.cama && traslado.cama.numero ? traslado.cama.numero : '-'
-                        td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.numero ? traslado.cama.habitacion.numero : '-'
-                        td= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.ala && traslado.cama.habitacion.ala.nombre ? traslado.cama.habitacion.ala.nombre : '-'
-                        td
+                        td.text-center= traslado.fechaInicio ? traslado.fechaInicio.toLocaleDateString('es-AR') : '-'
+                        td.text-center= traslado.cama && traslado.cama.numero ? traslado.cama.numero : '-'
+                        td.text-center= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.numero ? traslado.cama.habitacion.numero : '-'
+                        td.text-center= traslado.cama && traslado.cama.habitacion && traslado.cama.habitacion.ala && traslado.cama.habitacion.ala.nombre ? traslado.cama.habitacion.ala.nombre : '-'
+                        td.td-center
                           a.btn.btn-sm.btn-outline-secondary(href=`/recepcion/listEmergencia/${adm.id}`) Ver
               else
                 tbody

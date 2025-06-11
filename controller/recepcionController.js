@@ -385,9 +385,7 @@ async function formularioAdmitir(req, res) {
       turnoHoy = await Turno.findOne({
         where: {
           idPaciente,
-          fechaTurno: {
-            [Op.between]: [startOfDay, endOfDay]
-          }
+          estado: true
         }
       });
     }
@@ -526,7 +524,7 @@ async function crearAdmision(req, res) {
 
     if (habitacion.genero === null) {
       await Habitacion.update(
-        { genero: genero },
+        { genero: paciente.genero || genero },
         { where: { id: habitacion.id }, transaction: t }
       );
     }
