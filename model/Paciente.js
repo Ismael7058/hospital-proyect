@@ -46,8 +46,7 @@ Paciente.init(
     },
     email: {
       type: DataTypes.STRING,
-      allowNull: true,
-      unique: true
+      allowNull: true
     },
     telefono: {
       type: DataTypes.INTEGER,

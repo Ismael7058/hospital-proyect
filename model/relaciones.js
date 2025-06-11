@@ -8,6 +8,7 @@ const Cama = require('./Cama');
 const Habitacion = require('./Habitacion');
 const Ala = require('./Ala');
 const AdmisionProv = require('./AdmisionProv');
+const Turno = require('./Turno')
 
 // Nacionalidad 1:N Paciente
 Nacionalidad.hasMany(Paciente, { foreignKey: 'idNacionalidad', as: 'pacientes' });
@@ -27,6 +28,17 @@ SeguroMedico.belongsToMany(Paciente, {
   otherKey: 'idPaciente',
   as: 'pacientes'
 });
+
+// Paciente 1:N Turno
+Turno.belongsTo(Paciente, {
+  foreignKey: "idPaciente",
+  as: "paciente",
+});
+Paciente.hasMany(Turno, {
+  foreignKey: "idPaciente",
+  as: "turnos",
+});
+
 
 SeguroMedico.hasMany(SeguroPaciente, { foreignKey: 'idSeguroMedico' });
 SeguroPaciente.belongsTo(SeguroMedico, { foreignKey: 'idSeguroMedico' });
@@ -55,17 +67,17 @@ AdmisionProv.hasMany(TrasladoInternacion, {
 
 
 // Cama 1:N TrasladoInternacion
-Cama.hasMany(TrasladoInternacion, { 
-  foreignKey: 'idCama', 
-  as: 'trasladosInternacion' 
+Cama.hasMany(TrasladoInternacion, {
+  foreignKey: 'idCama',
+  as: 'trasladosInternacion'
 });
-TrasladoInternacion.belongsTo(Cama, { 
-  foreignKey: 'idCama', 
-  as: 'cama' 
+TrasladoInternacion.belongsTo(Cama, {
+  foreignKey: 'idCama',
+  as: 'cama'
 });
 
 // Habitacion 1:N Cama
-Habitacion.hasMany(Cama, { foreignKey: 'idHabitacion', as: "camas"});
+Habitacion.hasMany(Cama, { foreignKey: 'idHabitacion', as: "camas" });
 Cama.belongsTo(Habitacion, { foreignKey: 'idHabitacion', as: "habitacion" });
 
 // Ala 1:N Habitacion
@@ -81,5 +93,6 @@ module.exports = {
   TrasladoInternacion,
   Cama,
   Habitacion,
-  Ala
+  Ala,
+  Turno
 };

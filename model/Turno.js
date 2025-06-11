@@ -16,6 +16,10 @@ Turno.init(
         model: 'pacientes',
         key: 'id'
       }
+    },
+    estado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false
     }
   }, {
   sequelize,

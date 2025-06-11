@@ -11,7 +11,7 @@ const Cama = require("./Cama");
 const TrasladoInternacion = require("./TrasladoInternacion");
 const AdmisionProv = require("./AdmisionProv");
 const SeguroPaciente = require("./SeguroPaciente");
-
+const Turno = require('./Turno');
 // Relaciones
 require("./relaciones");
 
@@ -27,5 +27,6 @@ module.exports = {
   Habitacion,
   Cama,
   TrasladoInternacion,
-  AdmisionProv
+  AdmisionProv,
+  Turno
 };

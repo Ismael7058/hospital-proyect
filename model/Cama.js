@@ -11,7 +11,7 @@ Cama.init(
       allowNull: false,
     },
     estado: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.STRING,
       allowNull: false
     },
     idHabitacion: {
