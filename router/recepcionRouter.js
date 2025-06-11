@@ -13,7 +13,7 @@ router.get('/paciente/:id', pacienteController.datosPaciente);
 
 // Ver - agregar - editar seguros medicos del paciente
 router.get('/paciente/:id/seguro', recepcionController.formularioSeguro);
-router.post('/paciente/:id/seguro', recepcionController.crearSeguroPaciente);
+router.post('/paciente/:id/seguro/', recepcionController.crearSeguroPaciente);
 router.post('/paciente/:id/seguro/editar', recepcionController.editarSeguroPaciente);
 
 // Editar datos del Paciente
@@ -34,5 +34,7 @@ router.get('/emergencia/:id', recepcionController.verEmergencia);
 
 router.get('/listEmergencia', recepcionController.listaEmergencia);
 router.get('/listEmergencia/:id', recepcionController.verEmergencia);
+
+//router.get('alas', recepcionController.camasVista);
 
 module.exports = router;

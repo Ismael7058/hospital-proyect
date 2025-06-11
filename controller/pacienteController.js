@@ -111,7 +111,7 @@ async function crearPaciente(req, res) {
       });
     }
     const newPaciente = await Paciente.create(paciente);
-    res.redirect(`/recepcion/buscar/${newPaciente.id}`);
+    res.redirect(`/recepcion/paciente/${newPaciente.id}`);
   } catch (error) {
     console.error("Error al crear el paciente:", error);
     if (error.name === "SequelizeValidationError") {
