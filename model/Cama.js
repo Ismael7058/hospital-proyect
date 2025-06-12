@@ -18,7 +18,7 @@ Cama.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Habitacion',
+        model: 'habitacion',
         key: 'id'
       }
     }

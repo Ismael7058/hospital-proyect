@@ -36,7 +36,7 @@ Paciente.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Nacionalidad',
+        model: 'nacionalidad',
         key: 'id'
       }
     },

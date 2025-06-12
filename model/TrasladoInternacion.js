@@ -33,7 +33,7 @@ TrasladoInternacion.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Cama',
+        model: 'cama',
         key: 'id'
       }
     },
@@ -44,7 +44,7 @@ TrasladoInternacion.init(
   }, {
   sequelize,
   modelName: "TrasladoInternacion",
-  tableName: "trasladoInternacion",
+  tableName: "trasladointernacion",
 }
 );
 

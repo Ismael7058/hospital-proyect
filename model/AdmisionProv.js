@@ -50,7 +50,7 @@ AdmisionProv.init(
   }, {
   sequelize,
   modelName: "AdmisionProv",
-  tableName: "admisionProv",
+  tableName: "admisionprov",
 }
 );
 

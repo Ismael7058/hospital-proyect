@@ -40,7 +40,7 @@ SeguroPaciente.init({
 }, {
   sequelize,
   modelName: "SeguroPaciente",
-  tableName: "seguroPaciente",
+  tableName: "seguropaciente",
   timestamps: false
 });
 
