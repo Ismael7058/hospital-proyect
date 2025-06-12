@@ -23,7 +23,7 @@
 /* Main con imagen de fondo */
 .bg-error {
   flex: 1 1 auto;
-  background-image: url("../img/error404.gif");
+  background-image: url("/img/error404.gif");
   background-repeat: no-repeat;
   background-position: right;
   background-size: contain; 

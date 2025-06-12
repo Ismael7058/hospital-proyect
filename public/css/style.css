@@ -3,7 +3,7 @@
 }
 
 .bg-error{
-  background-image: url("../img/error404.gif");
+  background-image: url("/img/error404.gif");
   background-size: cover;
 }
 
