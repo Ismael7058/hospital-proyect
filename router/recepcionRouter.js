@@ -38,5 +38,5 @@ router.get('/listEmergencia/:id', recepcionController.verEmergencia);
 
 router.get('/camas', camaController.verCamas)
 router.get('/turnos', pacienteController.listarTurnos)
-
+router.get('/turnos/:id', pacienteController.formularioAdmitir)
 module.exports = router;

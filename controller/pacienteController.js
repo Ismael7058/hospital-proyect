@@ -1,10 +1,13 @@
 const {
   Nacionalidad,
   Paciente,
+  Ala,
+  Habitacion,
+  Cama,
   Turno
 } = require("../model");
 const validar = require('./validarDatos')
-
+const { Op } = require("sequelize");
 
 async function formularioRegistro(req, res) {
   const dni = req.query.dni || "";
@@ -189,7 +192,9 @@ async function listarTurnos(req, res) {
         as: 'paciente'
       }]
     });
-    return res.render('recepcion/listaTurno',{turno});
+
+    const hoyISO = new Date().toISOString().slice(0, 10); // "2025-06-11"
+    return res.render('recepcion/listaTurno',{turno, hoyISO});
   } catch (error) {
     console.error("Error al obtener la lista de turno:", error);
     res.status(500).send("Error interno del servidor");
@@ -197,10 +202,56 @@ async function listarTurnos(req, res) {
 }
 
 
+async function formularioAdmitir(req, res) {
+  const idTurno = req.params.id
+  try {
+    const errores = {};
+    if(!idTurno){
+      return res.status(404).send("idTurno no existe")
+    }
+    const turnoHoy = await Turno.findByPk(idTurno,
+      {include:[{
+        model:Paciente,
+        as: 'paciente'
+      }]
+    });
+    const hoyISO = new Date().toISOString().slice(0, 10); // "2025-06-11"
+    if(turnoHoy.fechaTurno > hoyISO){
+      return res.status(404).send("No tiene turnos hoy");
+    }
+    const paciente = await Paciente.findByPk(turnoHoy.paciente.id)
+
+    const generoFiltro = paciente
+      ? { [Op.or]: [{ genero: paciente.genero }, { genero: null }] }
+      : { genero: null };
+
+    const alas = await Ala.findAll({
+      include: [{
+        model: Habitacion,
+        where: generoFiltro,
+        as: 'habitaciones',
+        attributes: ['id', 'numero'],
+        include: [{
+          model: Cama,
+          as: 'camas',
+          attributes: ['id', 'numero', 'estado'],
+          where: { estado: "Libre" },
+          required: false
+        }]
+      }]
+    });
+    return res.render('recepcion/admitir', {paciente, alas, turnoHoy, errores:{}, dniNoEncontrado: null});
+  } catch (error) {
+    console.error("Error al obtener el paciente:", error.message, error.stack);
+    res.status(500).send("Error interno del servidor");
+  }
+}
+
 module.exports = {
   formularioRegistro,
   crearPaciente,
   buscarPaciente,
   datosPaciente,
-  listarTurnos
+  listarTurnos,
+  formularioAdmitir
 };

@@ -38,8 +38,11 @@ block content
                       td= t.paciente && t.paciente.dni ? t.paciente.dni : 'Desconocido'
                       td= t.paciente && t.paciente.nombre ? t.paciente.nombre : '-'
                       td= t.paciente && t.paciente.apellido ? t.paciente.apellido : '-'
-                      td.td-center
-                        a.btn.btn-sm.btn-outline-secondary(href=`/turnos/${t.id}/admitir`) Ver
+                      if t.fechaTurno.toISOString().slice(0, 10) == hoyISO
+                        td.td-center
+                          a.btn.btn-sm.btn-outline-secondary.text-center(href=`/recepcion/turnos/${t.id}`) Admitir
+                      else
+                        td
               else
                 tbody
                   tr

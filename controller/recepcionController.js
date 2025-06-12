@@ -510,7 +510,14 @@ async function crearAdmision(req, res) {
       fechaEgreso: null
     });
 
-
+    if(nuevaAdmision.motivo === "Turno"){
+      const turno = await Turno.findOne({
+        where:{
+          idPaciente:paciente.id,
+          estado:true
+        }
+      });
+    }
     await TrasladoInternacion.create({
       fechaInicio: fechaIngreso,
       fechaFin: null,

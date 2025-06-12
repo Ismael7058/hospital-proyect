@@ -38,11 +38,19 @@ block content
                           a#btnRegistrar.btn.btn-success(href=`/recepcion/registrar?dni=${dniNoEncontrado}`) Registrar
                       span.text-danger #{errores.dniError}
                     else 
-                      input.form-control.col-10#dni(
-                        type='text',
-                        name='dni',
-                        required
-                        )
+                      if trunohoy
+                        input.form-control.col-10#dni(
+                          type='text',
+                          name='dni',
+                          value = trunohoy.paciente.dni
+                          required
+                          )
+                      else
+                        input.form-control.col-10#dni(
+                          type='text',
+                          name='dni',
+                          required
+                          )
 
                 .col-6.my-3
                   label.form-label(for="motivo") Motivo:
@@ -50,7 +58,7 @@ block content
                     option(value="") -- Seleccionar --
                     option(value="Derivacion") Derivacion Medica
                     if turnoHoy 
-                      option(value="Turno") Cita Medica
+                      option(value="Turno", selected) Cita Medica
                   if turnoHoy
                     input(type="hidden", name="turnoId", value=turnoHoy.id)
 
