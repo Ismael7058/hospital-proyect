@@ -25,7 +25,7 @@ TrasladoInternacion.init(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'admisionProv',
+        model: 'admisionprov',
         key: 'id'
       }
     },

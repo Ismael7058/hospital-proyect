@@ -13,7 +13,7 @@ SeguroPaciente.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'seguroMedico', // nombre de la tabla
+      model: 'seguromedico', // nombre de la tabla
       key: 'id'
     }
   },

@@ -11,7 +11,7 @@ SeguroMedico.init({
 }, {
   sequelize,
   modelName: "SeguroMedico",
-  tableName: "seguropedico",
+  tableName: "seguromedico",
 });
 
 module.exports = SeguroMedico;

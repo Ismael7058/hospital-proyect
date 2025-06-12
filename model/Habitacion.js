@@ -18,7 +18,7 @@ Habitacion.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Ala',
+        model: 'ala',
         key: 'id'
       }
     },
