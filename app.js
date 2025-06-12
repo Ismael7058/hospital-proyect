@@ -26,6 +26,15 @@ app.use((req, res) => {
   res.status(404).render('error');
 });
 
+app.get("/ping", async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.send("Base de datos conectada correctamente 🚀");
+  } catch (error) {
+    res.status(500).send("Error conectando a la base de datos ❌: " + error);
+  }
+});
+
 // Definir el puerto desde la variable de entorno
 app.set("port", process.env.PORT || 3030);
 
