@@ -510,11 +510,11 @@ async function crearAdmision(req, res) {
       fechaEgreso: null
     });
 
-    if(nuevaAdmision.motivo === "Turno"){
+    if (nuevaAdmision.motivo === "Turno") {
       const turno = await Turno.findOne({
-        where:{
-          idPaciente:paciente.id,
-          estado:true
+        where: {
+          idPaciente: paciente.id,
+          estado: true
         }
       });
     }
@@ -531,8 +531,8 @@ async function crearAdmision(req, res) {
 
     if (habitacion.genero === null) {
       await Habitacion.update(
-        { genero: paciente.genero || genero },
-        { where: { id: habitacion.id }, transaction: t }
+        { genero: paciente.genero },
+        { where: { id: habitacion.id } }
       );
     }
     if (req.body.motivo === "Turno" && req.body.turnoId) {
@@ -730,7 +730,13 @@ async function crearAdmisionEmergencia(req, res) {
     });
     if (!habitacion) return res.status(400).send("Habitación no encontrada");
 
-    if (habitacion.genero && habitacion.genero !== genero) {
+    if (paciente && habitacion.genero && habitacion.genero !== paciente.genero) {
+      return res
+        .status(400)
+        .send(`La habitación está reservada para pacientes de género ${habitacion.genero}`);
+    }
+
+    if (!paciente && habitacion.genero && habitacion.genero !== genero) {
       return res
         .status(400)
         .send(`La habitación está reservada para pacientes de género ${habitacion.genero}`);
@@ -760,7 +766,9 @@ async function crearAdmisionEmergencia(req, res) {
         fechaFin: null,
         motivoCambio: null
       }, { transaction: t });
-
+      if (habitacion.genero === null) {
+        await habitacion.update({ genero:paciente.genero }, { transaction: t });
+      }
     } else {
       nuevaAdm = await AdmisionProv.create({
         dni: dni || null,
@@ -777,10 +785,9 @@ async function crearAdmisionEmergencia(req, res) {
         fechaInicio: new Date(),
         fechaFin: null
       }, { transaction: t });
-    }
-
-    if (habitacion.genero === null) {
-      await habitacion.update({ genero }, { transaction: t });
+      if (habitacion.genero === null) {
+        await habitacion.update({ genero }, { transaction: t });
+      }
     }
 
     await cama.update({ estado: "Ocupado" }, { transaction: t });
