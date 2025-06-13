@@ -212,7 +212,7 @@ a{
 
 /* Main */
 .main-bg-img {
-  background-image: url("../Img/background-image.png");
+  background-image: url("/img/background-image.png");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
