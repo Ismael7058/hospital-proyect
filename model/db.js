@@ -12,14 +12,18 @@ const sequelize = new Sequelize(
     port: process.env.DB_PORT,
     dialect: process.env.DB_DIALECT,
     logging: false,
+    timezone: '-03:00',
     dialectOptions: useSSL
       ? {
           ssl: {
             require: true,
             rejectUnauthorized: false
-          }
+          },
+          useUTC: false
         }
-      : {}
+      : {
+          useUTC: false
+        }
   }
 );
 
