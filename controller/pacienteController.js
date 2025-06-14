@@ -10,7 +10,7 @@ const validar = require('./validarDatos')
 const { Op } = require("sequelize");
 
 async function formularioRegistro(req, res) {
-  const dni = req.query.dni || "";
+  const dni = req.query.dni || req.body ||"";
   const nacionalidades = await Nacionalidad.findAll({
     attributes: ["id", "nombre"],
   });
@@ -19,7 +19,7 @@ async function formularioRegistro(req, res) {
     let errores = {};
     let dniNoEncontrado = null;
     let datos = {};
-
+    const fechaHoy = new Date().toISOString().slice(0, 10); // "2025-06-13"
     if (dni) {
       errores = validar.controlDni(dni);
       if (Object.keys(errores).length === 0) {
@@ -56,7 +56,8 @@ async function formularioRegistro(req, res) {
       nacionalidades,
       errores,
       dni,
-      datos: {}
+      datos: {},
+      fechaHoy
     });
   } catch (error) {
     console.error(error);
@@ -77,6 +78,7 @@ async function crearPaciente(req, res) {
     email: req.body.email,
     telefono: req.body.telefono
   };
+  const fechaHoy = new Date().toISOString().slice(0, 10); // "2025-06-13"
   try {
     const errores = validar.validarCamposPaciente(paciente);
     
@@ -102,6 +104,7 @@ async function crearPaciente(req, res) {
         dni: paciente.dni,
         id: pacienteExiste.id,
         nacionalidades,
+        fechaHoy
       });
     }
     const newPaciente = await Paciente.create(paciente);
@@ -116,6 +119,7 @@ async function crearPaciente(req, res) {
         errores: { existe: "Error de validación en la base de datos." },
         datos: paciente,
         nacionalidades,
+        fechaHoy
       });
     }
     res.status(500).send("Error al registrar el paciente.");
@@ -193,7 +197,7 @@ async function listarTurnos(req, res) {
       }]
     });
 
-    const hoyISO = new Date().toISOString().slice(0, 10); // "2025-06-11"
+    const hoyISO = new Date().toISOString().slice(0, 10); // "2025-06-13"
     return res.render('recepcion/listaTurno',{turno, hoyISO});
   } catch (error) {
     console.error("Error al obtener la lista de turno:", error);

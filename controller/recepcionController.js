@@ -15,12 +15,15 @@ const {
 } = require("../model");
 
 const validar = require('./validarDatos')
-const { Op } = require("sequelize");
+const { Op, where, fn, col } = require("sequelize");
+const Sequelize = require("sequelize");
+
 
 
 
 async function formularioSeguro(req, res) {
   const id = req.params.id;
+  const fechaHoy = new Date().toISOString().slice(0, 10); // "2025-06-13"
   try {
     const paciente = await Paciente.findByPk(id, {
       include: [{
@@ -48,7 +51,8 @@ async function formularioSeguro(req, res) {
     res.render("recepcion/seguro", {
       paciente,
       seguroMedico: segurosDisponibles,
-      erroresUpdate: {}, erroresCreate: {}
+      erroresUpdate: {}, erroresCreate: {},
+      fechaHoy
     });
   } catch (error) {
     console.error("Error al obtener el paciente:", error.message, error.stack);
@@ -61,7 +65,7 @@ async function formularioSeguro(req, res) {
 async function crearSeguroPaciente(req, res) {
   const pacienteId = req.params.id;
   const { seguroNuevo, numeroAfiliadoNuevo, fechaVigenciaNuevo, fechaFinalizacionNuevo } = req.body;
-
+  const fechaHoy = new Date().toISOString().slice(0, 10); // "2025-06-13"
   try {
     const paciente = await Paciente.findByPk(pacienteId, {
       include: [{
@@ -81,7 +85,8 @@ async function crearSeguroPaciente(req, res) {
       return res.status(400).render("recepcion/seguro", {
         errores: { seguro: "Ya existe ese seguro para este paciente." },
         paciente,
-        seguroMedico: listaSeguros, erroresCreate: {}, erroresUpdate: {}
+        seguroMedico: listaSeguros, erroresCreate: {}, erroresUpdate: {},
+        fechaHoy
       });
     }
 
@@ -92,7 +97,8 @@ async function crearSeguroPaciente(req, res) {
         erroresCreate,
         paciente,
         seguroMedico: listaSeguros,
-        erroresUpdate: {}
+        erroresUpdate: {},
+        fechaHoy
       });
     }
 
@@ -392,14 +398,14 @@ async function formularioAdmitir(req, res) {
 
     const generoFiltro = paciente
       ? { [Op.or]: [{ genero: paciente.genero }, { genero: null }] }
-      : { genero: null };
+      : {};
 
     const alas = await Ala.findAll({
       include: [{
         model: Habitacion,
         where: generoFiltro,
         as: 'habitaciones',
-        attributes: ['id', 'numero'],
+        attributes: ['id', 'numero', 'genero'],
         include: [{
           model: Cama,
           as: 'camas',
@@ -420,6 +426,7 @@ async function formularioAdmitir(req, res) {
 async function crearAdmision(req, res) {
   const idPacienteParam = req.params.id;
   const dni = req.body.dni;
+  const motivo = req.body.motivo;
 
   try {
     const errores = {};
@@ -431,18 +438,19 @@ async function crearAdmision(req, res) {
     } else {
       return res.status(400).send("Se requiere ID o DNI del paciente");
     }
+    const generoFiltro = paciente
+      ? { [Op.or]: [{ genero: paciente.genero }, { genero: null }] }
+      : {};
+
+      let alas
 
     if (!paciente) {
-      const generoFiltro = paciente
-        ? { [Op.or]: [{ genero: paciente.genero }, { genero: null }] }
-        : { genero: null };
-
-      const alas = await Ala.findAll({
+      alas = await Ala.findAll({
         include: [{
           model: Habitacion,
           where: generoFiltro,
           as: 'habitaciones',
-          attributes: ['id', 'numero'],
+          attributes: ['id', 'numero', 'genero'],
           include: [{
             model: Cama,
             as: 'camas',
@@ -453,11 +461,31 @@ async function crearAdmision(req, res) {
         }]
       });
       const dniNoEncontrado = dni;
+      errores.dni= "Dni no encontrado";
       errores.dniError = "Paciente no encontrado";
       return res.status(404).render("recepcion/admitir", { paciente, alas, turnoHoy: null, errores, dniNoEncontrado });
     }
-
+    alas = await Ala.findAll({
+      include: [{
+        model: Habitacion,
+        where: generoFiltro,
+        as: 'habitaciones',
+        attributes: ['id', 'numero', 'genero'],
+        include: [{
+          model: Cama,
+          as: 'camas',
+          attributes: ['id', 'numero', 'estado'],
+          where: { estado: "Libre" },
+          required: false
+        }]
+      }]
+    });
+    if (req.body.genero && paciente.genero !== req.body.genero) {
+      errores.genero = `El género del paciente con DNI ${paciente.dni} no era ${req.body.genero}.`;
+      return res.render("recepcion/admitir", { paciente, alas, turnoHoy:null, errores, dniNoEncontrado: null });
+    }
     const idPaciente = paciente.id;
+
 
     const admisionActiva = await Admision.findOne({
       where: {
@@ -469,6 +497,7 @@ async function crearAdmision(req, res) {
     if (admisionActiva) {
       return res.status(400).send("El paciente ya tiene una admisión activa.");
     }
+
 
     const fechaIngreso = new Date();
 
@@ -486,6 +515,8 @@ async function crearAdmision(req, res) {
       return res.status(400).send("Ya existe una admisión anterior con una fecha de finalización posterior a la fecha de ingreso.");
     }
 
+
+
     const cama = await Cama.findByPk(req.body.cama);
     if (!cama || cama.estado !== "Libre") {
       return res.status(400).send("La cama seleccionada no está disponible.");
@@ -500,8 +531,53 @@ async function crearAdmision(req, res) {
     if (habitacion.genero !== null && habitacion.genero !== paciente.genero) {
       return res.status(400)
         .send(`La habitación está reservada para género ${habitacion.genero} y el paciente es ${paciente.genero}.`);
-    }
 
+    }
+    const todosTurnos = await Turno.findAll({
+      where: { idPaciente },
+      order: [['fechaTurno', 'ASC']]
+    });
+    console.log("TODOS los turnos del paciente:", todosTurnos.map(t => t.fechaTurno));
+    if (motivo === "Turno") {
+      // Tomamos ahora
+      const ahora = new Date();
+
+      // Año, mes y día en UTC
+      const year = ahora.getUTCFullYear();
+      const month = ahora.getUTCMonth();      // 0–11
+      const day = ahora.getUTCDate();       // 1–31
+
+      // Inicio del día en UTC: 00:00:00.000Z
+      const inicioUTC = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+
+      // Fin del día en UTC: 23:59:59.999Z
+      const finUTC = new Date(Date.UTC(year, month, day, 23, 59, 59, 999));
+
+      console.log("Buscando turno UTC entre:", inicioUTC, finUTC);
+
+      // Ahora buscamos en ese rango en UTC
+      const turnoPaciente = await Turno.findOne({
+        where: {
+          idPaciente,
+          estado: true,
+          fechaTurno: {
+            [Op.between]: [inicioUTC, finUTC]
+          }
+        }
+      });
+
+      console.log("turnoPaciente encontrado:", turnoPaciente);
+      if (!turnoPaciente) {
+        return res.status(400).send("El paciente no tiene un turno para hoy.");
+      } else if (turnoPaciente.estado === false) {
+        return res.status(400).send("El turno del paciente ya ha sido utilizado.");
+      } else {
+        await turnoPaciente.update({
+          estado: false
+        });
+
+      }
+    }
     const nuevaAdmision = await Admision.create({
       idPaciente,
       motivo: req.body.motivo,
@@ -510,14 +586,6 @@ async function crearAdmision(req, res) {
       fechaEgreso: null
     });
 
-    if (nuevaAdmision.motivo === "Turno") {
-      const turno = await Turno.findOne({
-        where: {
-          idPaciente: paciente.id,
-          estado: true
-        }
-      });
-    }
     await TrasladoInternacion.create({
       fechaInicio: fechaIngreso,
       fechaFin: null,
@@ -533,12 +601,6 @@ async function crearAdmision(req, res) {
       await Habitacion.update(
         { genero: paciente.genero },
         { where: { id: habitacion.id } }
-      );
-    }
-    if (req.body.motivo === "Turno" && req.body.turnoId) {
-      await Turno.update(
-        { estado: false },
-        { where: { id: req.body.turnoId } }
       );
     }
 
@@ -767,7 +829,7 @@ async function crearAdmisionEmergencia(req, res) {
         motivoCambio: null
       }, { transaction: t });
       if (habitacion.genero === null) {
-        await habitacion.update({ genero:paciente.genero }, { transaction: t });
+        await habitacion.update({ genero: paciente.genero }, { transaction: t });
       }
     } else {
       nuevaAdm = await AdmisionProv.create({
