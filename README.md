@@ -89,8 +89,14 @@ Configura el archivo `.env` con los datos de tu base de datos (puedes usar `.env
 - **Pug:** Motor de plantillas utilizado para generar las vistas HTML de la aplicación de manera dinámica y eficiente.
 - **Bootstrap:** Framework CSS empleado para el diseño responsivo y la apariencia moderna de la interfaz de usuario.
 
-## Notas
-
-- El sistema utiliza Sequelize para la gestión de la base de datos.
-- Las vistas están construidas con Pug y Bootstrap.
-- Para desarrollo, puedes modificar los modelos y ejecutar el servidor con `npm run dev` para recarga automática.
+> **Nota:**  
+> Este sistema utiliza Sequelize, por lo que puedes usar otros motores de base de datos soportados (como MySQL o MariaDB).  
+> Si prefieres MySQL, instala la dependencia `mysql2`:
+> ```sh
+> npm install mysql2
+> ```
+> Luego, en tu archivo `.env`, cambia:
+> ```
+> DB_DIALECT=mysql
+> ```
+> y ajusta los datos de conexión según tu entorno.
