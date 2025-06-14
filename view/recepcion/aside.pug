@@ -5,27 +5,27 @@ aside.col-2.aside.bg-green-blue.p-0
         p.ms-2.text-white Menu
 
       li
-        a.option(href="/recepcion")
+        a.option(href="/")
           img.icon(src="/img/casa.png", alt="Icono de Home")
           span Home
 
       li.cont-option.mt-3
-        button.btn-list(onclick="toggleList('listOne')")
+        button.btn-list.d-flex.align-items-center(onclick="toggleList('listOne')")
           img.icon(src="/img/paciente.png", alt="")
-          span  Gestión de Pacientes
+          span.ps-1  Gestión de Pacientes
         ul.list#listOne
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/buscar") Buscar Paciente
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/registrar") Registrar Paciente
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/admitir") Admitir
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/turnos") Turnos
       li.cont-option.mt-3
-        button.btn-list(onclick="toggleList('listTwo')")
-          img.icon(src="/img/paciente.png", alt="")
-          span  Emergencia
+        button.btn-list.d-flex.align-items-center(onclick="toggleList('listTwo')")
+          img.icon(src="/img/sirena.png", alt="")
+          span.ps-1  Emergencia
         ul.list#listTwo
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/emergencia") Admision de Emergencia
           li.list-elem: a.text-white.text-decoration-none(href="/recepcion/listEmergencia") Lista de Emergencia
       li
         a.option.mt-3(href="/recepcion/camas")
-          img.icon(src="/img/casa.png", alt="Icono de Home")
+          img.icon(src="/img/cama.png", alt="Icono de Home")
           span Gestionar Camas
