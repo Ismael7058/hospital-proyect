@@ -13,39 +13,55 @@ block content
             .row
               .col-md-4.mb-3
                 label.form-label(for="dni") DNI
-                input.form-control(type="number", name="dni", value=dni, required)
+                input.form-control(type="number", name="dni", value=(datos && datos.dni) || "", required)
                 if errores && errores.dni
                   .text-danger.small.mt-1 #{errores.dni}
               .col-md-4.mb-3
                 label.form-label(for="nombre") Nombre
                 input.form-control(type="text", name="nombre", value=(datos && datos.nombre) || "", required)
+                if errores && errores.nombre
+                  .text-danger.small.mt-1 #{errores.nombre}
               .col-md-4.mb-3
                 label.form-label(for="apellido") Apellido
                 input.form-control(type="text", name="apellido", value=(datos && datos.apellido) || "", required)
+                if errores && errores.apellido
+                  .text-danger.small.mt-1 #{errores.apellido}
               .col-md-4.mb-3
                 label.form-label(for="fechaNacimiento") Fecha de Nacimiento
                 input.form-control(type="date", name="fechaNacimiento", value=(datos && datos.fechaNacimiento) || "", required)
+                if errores && errores.fechaNacimiento
+                  .text-danger.small.mt-1 #{errores.fechaNacimiento}
               .col-md-4.mb-3
                 label.form-label(for="genero") Sexo
                 select.form-select(name="genero", required)
                   option(value="", selected=(!(datos && datos.genero))) -- Seleccione --
                   option(value="Masculino", selected=(datos && datos.genero === "Masculino")) Masculino
                   option(value="Femenino", selected=(datos && datos.genero === "Femenino")) Femenino
+                if errores && errores.genero
+                  .text-danger.small.mt-1 #{errores.genero}
               .col-md-4.mb-3
                 label.form-label(for="nacionalidad") Nacionalidad
                 select.form-select(name="nacionalidad", required)
                   option(value="", selected=!(datos && datos.nacionalidad)) -- Seleccione --
                   each n in nacionalidades
                     option(value=n.id, selected=(datos && datos.nacionalidad == n.id))= n.nombre
+                if errores && errores.nacionalidad
+                  .text-danger.small.mt-1 #{errores.nacionalidad}
               .col-md-12.mb-3
                 label.form-label(for="domicilio") Domicilio
                 input.form-control(type="text", name="domicilio", value=(datos && datos.domicilio) || "", required)
+                if errores && errores.domicilio
+                  .text-danger.small.mt-1 #{errores.domicilio}
               .col-md-6.mb-3
                 label.form-label(for="email") Email
                 input.form-control(type="email", name="email", value=(datos && datos.email) || "", required)
+                if errores && errores.email
+                  .text-danger.small.mt-1 #{errores.email}
               .col-md-6.mb-3
                 label.form-label(for="telefono") Teléfono
                 input.form-control(type="number", name="telefono", value=(datos && datos.telefono) || "", required)
+                if errores && errores.telefono
+                  .text-danger.small.mt-1 #{errores.telefono}
           .text-center.mt-4
             button.btn.btn-primary.fixed-submit(type="submit") Registrar Paciente
 
@@ -97,4 +113,12 @@ block content
           });
         });
       }
+      form.querySelectorAll("input, select").forEach(input => {
+        input.addEventListener("input", () => {
+          const next = input.nextElementSibling;
+          if (next && next.classList.contains("text-danger")) {
+            next.remove();
+          }
+        });
+      });
     });
