@@ -189,21 +189,41 @@ async function datosPaciente(req, res) {
 
 async function listarTurnos(req, res) {
   try {
-    const turno = await Turno.findAll({
-      where:{estado:true},
-      include:[{
-        model: Paciente,
-        as: 'paciente'
-      }]
+    let turnos = await Turno.findAll({
+      where: { estado: true },
+      include: [{ model: Paciente, as: 'paciente' }]
     });
 
-    const hoyISO = new Date().toISOString().slice(0, 10); // "2025-06-13"
-    return res.render('recepcion/listaTurno',{turno, hoyISO});
+    // Fecha de hoy en hora local (YYYY-MM-DD)
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd   = String(hoy.getDate()).padStart(2, '0');
+    const hoyISO = `${yyyy}-${mm}-${dd}`;
+
+    // Para cada turno, calculamos su fecha local ISO
+    const turnosConLocal = turnos.map(t => {
+      const fecha = new Date(t.fechaTurno);       // JS Date en tu zona local
+      const y  = fecha.getFullYear();
+      const m  = String(fecha.getMonth() + 1).padStart(2, '0');
+      const d  = String(fecha.getDate()).padStart(2, '0');
+      return {
+        ...t.toJSON(),                           // convierte el modelo en objeto literal
+        fechaLocalISO: `${y}-${m}-${d}`
+      };
+    });
+
+    return res.render('recepcion/listaTurno', {
+      turno: turnosConLocal,
+      hoyISO
+    });
   } catch (error) {
     console.error("Error al obtener la lista de turno:", error);
     res.status(500).send("Error interno del servidor");
   }
 }
+
+
 
 
 async function formularioAdmitir(req, res) {
@@ -234,7 +254,7 @@ async function formularioAdmitir(req, res) {
         model: Habitacion,
         where: generoFiltro,
         as: 'habitaciones',
-        attributes: ['id', 'numero'],
+        attributes: ['id', 'numero', 'genero'],
         include: [{
           model: Cama,
           as: 'camas',
