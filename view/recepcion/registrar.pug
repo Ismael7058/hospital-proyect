@@ -28,7 +28,7 @@ block content
                   .text-danger.small.mt-1 #{errores.apellido}
               .col-md-4.mb-3
                 label.form-label(for="fechaNacimiento") Fecha de Nacimiento
-                input.form-control(type="date", name="fechaNacimiento", value=(datos && datos.fechaNacimiento) || "", required)
+                input.form-control(type="date", name="fechaNacimiento", value=(datos && datos.fechaNacimiento) || "", max=fechaHoy ,required)
                 if errores && errores.fechaNacimiento
                   .text-danger.small.mt-1 #{errores.fechaNacimiento}
               .col-md-4.mb-3

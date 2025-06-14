@@ -14,9 +14,9 @@ block content
             .row.border.rounded.p-4.bg-light.shadow.mt-5
               - const actionURL = paciente ? `/recepcion/paciente/${paciente.id}/admitir/` : '/recepcion/admitir/'
               form.row(method="POST", action=actionURL)
-                .col-6.my-3
+                .col-6.mb-3
                   label.form-label.rounded-0.rounded-start(for='dni') Ingresar Dni
-                  if paciente && paciente.dni
+                  if paciente && paciente.dni && !errores.genero
                       .d-flex.align-items-center
                         input.form-control#dni(
                           type='text',
@@ -25,7 +25,7 @@ block content
                           disabled, required
                         )
                   else 
-                    if errores && !errores.dni && dniNoEncontrado && dniNoEncontrado.length > 0
+                    if errores && errores.dni && dniNoEncontrado && dniNoEncontrado.length > 0
                       .row.align-items-center
                         #inputDni.col-9
                           input.form-control#dni(
@@ -37,31 +37,57 @@ block content
                         .col-2
                           a#btnRegistrar.btn.btn-success(href=`/recepcion/registrar?dni=${dniNoEncontrado}`) Registrar
                       span.text-danger #{errores.dniError}
-                    else 
-                      if trunohoy
-                        input.form-control.col-10#dni(
+                    else
+                      if errores.genero
+                        .d-flex.align-items-center
+                        input.form-control#dni(
                           type='text',
                           name='dni',
-                          value = trunohoy.paciente.dni
+                          value=(paciente && paciente.dni) ? paciente.dni : "",
                           required
-                          )
-                      else
-                        input.form-control.col-10#dni(
-                          type='text',
-                          name='dni',
-                          required
-                          )
+                        )
+                      else 
+                        if trunohoy
+                          input.form-control.col-10#dni(
+                            type='text',
+                            name='dni',
+                            value = trunohoy.paciente.dni
+                            required
+                            )
+                        else
+                          input.form-control.col-10#dni(
+                            type='text',
+                            name='dni',
+                            required
+                            )
+                .col-6.mb-3
+                  label.form-label(for='genero') Género
+                  if paciente && paciente.genero
+                    select.form-select(name='genero', required, disabled)
+                      option(value=paciente.genero, selected) #{paciente.genero}
+                    if errores && errores.genero
+                      .text-danger.small #{errores.genero}
+                  else
+                    select.form-select(name='genero', required)
+                      option(value='', selected=!(paciente && paciente.genero)) -- Seleccionar --
+                      option(value='Masculino', selected=(paciente && paciente.genero === 'Masculino')) Masculino
+                      option(value='Femenino', selected=(paciente && paciente.genero === 'Femenino')) Femenino
 
-                .col-6.my-3
+                .col-6.mb-3
                   label.form-label(for="motivo") Motivo:
-                  select.form-select(name="motivo") 
-                    option(value="") -- Seleccionar --
-                    option(value="Derivacion") Derivacion Medica
-                    if turnoHoy 
-                      option(value="Turno", selected) Cita Medica
-                  if turnoHoy
-                    input(type="hidden", name="turnoId", value=turnoHoy.id)
-
+                  if paciente 
+                    select.form-select(name="motivo") 
+                      option(value="") -- Seleccionar --
+                      option(value="Derivacion") Derivacion Medica
+                      if turnoHoy 
+                        option(value="Turno", selected) Cita Medica
+                    if turnoHoy
+                      input(type="hidden", name="turnoId", value=turnoHoy.id)
+                  else
+                    select.form-select(name="motivo", required)
+                      option(value="") -- Seleccionar --
+                      option(value="Derivacion") Derivacion Medica
+                      option(value="Turno") Cita Medica
 
                 .col-6.mb-3
                   label.form-label(for="ala") Seleccionar Ala
@@ -69,6 +95,7 @@ block content
                     option(value="") -- Seleccionar --
                     each ala in alas
                       option(value=ala.id) #{ala.nombre}
+
 
                 .col-6.mb-3
                   label.form-label(for="habitacion") Seleccionar Habitación
@@ -89,74 +116,113 @@ block content
                 .d-flex.justify-content-center
                   button.btn.btn-primary.me-3(type="submit") Admitir Paciente
                   a.btn.btn-outline-secondary.ms-3(href='../') Cancelar
-
   script.
     const dataAlaHabitaciones = !{JSON.stringify(alas)};
-
-  script.
+    const pacienteData = !{JSON.stringify(paciente || null)};
     document.addEventListener('DOMContentLoaded', () => {
-      const alaSelect = document.getElementById('ala');
+      const generoSelect     = document.querySelector('select[name="genero"]');
+      const alaSelect        = document.getElementById('ala');
       const habitacionSelect = document.getElementById('habitacion');
-      const camaSelect = document.getElementById('cama');
+      const camaSelect       = document.getElementById('cama');
 
+      // --- Bloquear si NO hay paciente
+      if (!pacienteData) {
+        alaSelect.disabled        = true;
+        habitacionSelect.disabled = true;
+        camaSelect.disabled       = true;
+      }
+
+      // Función que puebla y habilita el select de Alas
+      function repoblarAlasPorGenero(gen) {
+        // reset...
+        alaSelect.innerHTML        = '<option value="">-- Seleccionar --</option>';
+        habitacionSelect.innerHTML = '<option value="">-- Selecciona un ala primero --</option>';
+        camaSelect.innerHTML       = '<option value="">-- Selecciona una habitación primero --</option>';
+        alaSelect.disabled         = true;
+        habitacionSelect.disabled  = true;
+        camaSelect.disabled        = true;
+
+        if (!gen) return;
+
+        const filtradas = dataAlaHabitaciones
+          .map(ala => ({
+            id: ala.id,
+            nombre: ala.nombre,
+            habitaciones: ala.habitaciones.filter(h =>
+              h.genero === null || String(h.genero) === gen
+            )
+          }))
+          .filter(ala => ala.habitaciones.length > 0);
+
+        filtradas.forEach(ala => {
+          alaSelect.innerHTML += `<option value="${ala.id}">${ala.nombre}</option>`;
+        });
+        alaSelect.disabled = false;
+      }
+
+      // 1) Al cambiar género
+      generoSelect.addEventListener('change', () => {
+        repoblarAlasPorGenero(generoSelect.value);
+      });
+
+      // 2) Si el campo viene precargado (paciente existente),
+      //    disparo inmediato para poblar el Ala
+      if (generoSelect.value) {
+        repoblarAlasPorGenero(generoSelect.value);
+      }
+
+      // 3) Al seleccionar Ala → poblar Habitaciones
       alaSelect.addEventListener('change', () => {
         const alaId = alaSelect.value;
         habitacionSelect.innerHTML = '<option value="">-- Selecciona una habitación --</option>';
-        camaSelect.innerHTML = '<option value="">-- Selecciona una habitación primero --</option>';
-        habitacionSelect.disabled = true;
-        camaSelect.disabled = true;
+        camaSelect.innerHTML       = '<option value="">-- Selecciona una habitación primero --</option>';
+        habitacionSelect.disabled  = true;
+        camaSelect.disabled        = true;
 
         if (!alaId) return;
 
-        const alaSeleccionada = dataAlaHabitaciones.find(ala => ala.id == alaId);
-        if (alaSeleccionada && alaSeleccionada.habitaciones.length > 0) {
-          habitacionSelect.disabled = false;
-          alaSeleccionada.habitaciones.forEach(h => {
-            habitacionSelect.innerHTML += `<option value="${h.id}">Habitación ${h.numero}</option>`;
-          });
-        }
+        const alaSel = dataAlaHabitaciones.find(a => String(a.id) === alaId);
+        alaSel.habitaciones.forEach(h => {
+          habitacionSelect.innerHTML += `<option value="${h.id}">Habitación ${h.numero}</option>`;
+        });
+        habitacionSelect.disabled = false;
       });
 
+      // 4) Al seleccionar Habitación → poblar Camas
       habitacionSelect.addEventListener('change', () => {
         const alaId = alaSelect.value;
-        const habitacionId = habitacionSelect.value;
+        const habId = habitacionSelect.value;
         camaSelect.innerHTML = '<option value="">-- Selecciona una habitación primero --</option>';
-        camaSelect.disabled = true;
+        camaSelect.disabled  = true;
 
-        const alaSeleccionada = dataAlaHabitaciones.find(ala => ala.id == alaId);
-        const habitacionSeleccionada = alaSeleccionada?.habitaciones.find(h => h.id == habitacionId);
+        if (!habId) return;
 
-        if (habitacionSeleccionada && habitacionSeleccionada.camas.length > 0) {
-          camaSelect.disabled = false;
-          camaSelect.innerHTML = '<option value="">-- Seleccionar cama --</option>';
-          habitacionSeleccionada.camas.forEach(c => {
-            camaSelect.innerHTML += `<option value="${c.id}">Cama ${c.numero}</option>`;
-          });
-        }
+        const alaSel = dataAlaHabitaciones.find(a => String(a.id) === alaId);
+        const habSel = alaSel.habitaciones.find(h => String(h.id) === habId);
+        habSel.camas.forEach(c => {
+          camaSelect.innerHTML += `<option value="${c.id}">Cama ${c.numero}</option>`;
+        });
+        camaSelect.disabled = false;
       });
-    });
-  script.
-    document.addEventListener('DOMContentLoaded', () => {
+
+      // … tus otros listeners …
+
       const dniInput = document.getElementById('dni');
-      const registrarBtn = document.getElementById('btnRegistrar');
-      const contInput = document.getElementById('inputDni');
+      dniInput.addEventListener('input', () => {
+        // 1) Quitar mensaje y botón
+        document.querySelectorAll('span.text-danger').forEach(span => {
+          if (span.textContent.includes('Paciente no encontrado')) span.remove();
+        });
+        const btn = document.getElementById('btnRegistrar');
+        if (btn) btn.remove();
 
-      dniInput?.addEventListener('input', () => {
-        // Eliminar span de error si existe en todo el documento
-        const errorSpan = document.querySelector('span.text-danger');
-        if (errorSpan) {
-          errorSpan.remove();
-        }
-
-        // Eliminar botón registrar si existe
-        if (registrarBtn) {
-          registrarBtn.remove();
-        }
-
-        // Cambiar col-9 a col-12 si es el único className
-        if (contInput?.classList.contains('col-9') && contInput.classList.length === 1) {
-          contInput.classList.remove('col-9');
-          contInput.classList.add('col-12');
+        // 2) Ajustar columnas
+        const cont = document.getElementById('inputDni');
+        if (cont && cont.classList.contains('col-9')) {
+          cont.classList.remove('col-9');
+          cont.classList.add('col-12');
         }
       });
+
+
     });
