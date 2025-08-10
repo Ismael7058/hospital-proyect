@@ -7,15 +7,33 @@ html(lang="es")
     link(rel="stylesheet", href="/css/bootstrap.min.css")
     link(rel="stylesheet", href="/css/style.css")
   body.body
-    include compartido/headerRol
+    include compartido/header
 
     section.row.h-100.section
-      aside.col-2.aside.bg-green-blue.p-0
-        nav
-          ul.list-style-none.m-0.ps-4.pe-3
-            li.fs-5.mt-3.mb-5
-              p.ms-2.text-white Menu
-      main.col-10.main-bg-img
-        include compartido/welcome
+      if user 
+        include compartido/aside
+        main.col-10.main-bg-img
+          include compartido/welcome
+      else 
+        main.col-12.main-bg-img.d-flex
+          include compartido/welcome
 
+    if !user
+      // Modal Login
+      div#modalLogin.modal.fade(tabindex="-1")
+        .modal-dialog.modal-dialog-centered
+          .modal-content
+            .d-flex.justify-content-end
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-header.justify-content-center.pt-0
+              h5.modal-title Iniciar Sesión
+            .modal-body
+              form(action="", method="post")
+                .mb-3
+                  label.pb-2(for="email") Dirección de correo electrónico
+                  input.form-control.bg-color-input(type="email", required)
+                .mb-3
+                  label.pb-2(for="password") Contraseña
+                  input.form-control.bg-color-input(type="password", required)
+                button.btn.btn-primary.w-100.mt-3(type="submit") Iniciar Sesión
     script(src="/js/bootstrap.bundle.min.js")

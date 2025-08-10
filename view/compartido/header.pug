@@ -5,9 +5,13 @@ header.header.bg-green-blue
         a.text-decoration-none.fs-5.text-white(href="/")
           img(src="/img/logo.png" alt="Logo de la pagina")
           span.fst-italic HospitalHorizon
-      li.dropdown.p-2.d-flex.align-items-center
-        button.btn-user(data-bs-toggle="dropdown", aria-expanded="false")
-          img.icon(src="/img/avatar.png" alt="Icono de Usuario")
-        ul.dropdown-menu.text-center(style="background-color: #1a262e;")
-          li: a.dropdown-item.text-white.desp(href="#") Modificar Cuenta
-          li: a.dropdown-item.text-white.desp(href="#") Cerrar sesión
+      if user
+        li.dropdown.p-2.d-flex.align-items-center
+          button.btn-user(data-bs-toggle="dropdown", aria-expanded="false")
+            img.icon(src="/img/avatar.png" alt="Icono de Usuario")
+          ul.dropdown-menu.text-center(style="background-color: #1a262e;")
+            li: a.dropdown-item.text-white.desp(href="#") Modificar Cuenta
+            li: a.dropdown-item.text-white.desp(href="#") Cerrar sesión
+      else
+        li.dropdown.p-2.d-flex.align-items-center
+          button.btn-sesion(data-bs-toggle="modal", data-bs-target="#modalLogin") Iniciar Sesión
