@@ -24,7 +24,20 @@ function controlDni(dni) {
   return errores;
 }
 
+function username(username) {
+  if (typeof username !== 'string') throw new Error('Nombre de usuario no es un string')
+  if (username.length < 3) throw new Error('Nombre de usuario menor a 3 caracteres')
+}
+
+function password(password) {
+  if (typeof password !== 'string') throw new Error('Contraseña no es un string')
+  if (password.length < 6) throw new Error('Contraseña es menor a 6 caracteres')
+}
+
+
 module.exports = {
   validarCamposPaciente,
-  controlDni
+  controlDni,
+  username,
+  password
 }
