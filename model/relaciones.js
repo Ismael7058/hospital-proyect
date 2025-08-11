@@ -9,6 +9,35 @@ const Habitacion = require('./Habitacion');
 const Ala = require('./Ala');
 const AdmisionProv = require('./AdmisionProv');
 const Turno = require('./Turno')
+const Usuario = require('./Usuario');
+const Persona = require('./Persona');
+const Recepcion = require('./Recepcion');
+const Medico = require('./Medico');
+const Enfermero = require('./Enfermero');
+
+// Usuario 1:1 Persona
+Usuario.belongsTo(Persona, { foreignKey: 'idPersona', as: 'persona' });
+Persona.hasOne(Usuario, { foreignKey: 'idPersona', as: 'usuario' });
+
+// Recepcion 1:1 Usuario
+Recepcion.belongsTo(Usuario, { foreignKey: 'idUsuario', as: 'usuario' });
+Usuario.hasOne(Recepcion, { foreignKey: 'idUsuario', as: 'recepcion'});
+
+// Enfermero 1:1 Usuario
+Recepcion.belongsTo(Ala, { foreignKey: 'idAla', as: 'ala' });
+Ala.hasOne(Recepcion, { foreignKey: 'idAla', as: 'recepcion'});
+
+// Medico 1:1 Usuario
+Medico.belongsTo(Usuario, { foreignKey: 'idUsuario', as: 'usuario' });
+Usuario.hasOne(Medico, { foreignKey: 'idUsuario', as: 'medico'});;
+
+// Enfermero 1:1 Usuario
+Enfermero.belongsTo(Usuario, { foreignKey: 'idUsuario', as: 'usuario' });
+Usuario.hasOne(Enfermero, { foreignKey: 'idUsuario', as: 'enfermero'});;
+
+// Enfermero 1:1 Usuario
+Enfermero.belongsTo(Ala, { foreignKey: 'idAla', as: 'ala' });
+Ala.hasOne(Enfermero, { foreignKey: 'idAla', as: 'enfermero'});
 
 // Nacionalidad 1:N Paciente
 Nacionalidad.hasMany(Paciente, { foreignKey: 'idNacionalidad', as: 'pacientes' });
