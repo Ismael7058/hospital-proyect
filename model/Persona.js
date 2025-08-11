@@ -59,7 +59,7 @@ Persona.init(
   }, {
   sequelize,
   modelName: "Persona",
-  tableName: "personas",
+  tableName: "persona",
 }
 );
 
